@@ -582,6 +582,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) { e.preventDefault(); editor.redo(); return; }
     if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); editor.deleteSelected(); return; }
 
+    const nudgeMap = {
+      ArrowUp: { dx: 0, dy: -1 },
+      ArrowDown: { dx: 0, dy: 1 },
+      ArrowLeft: { dx: -1, dy: 0 },
+      ArrowRight: { dx: 1, dy: 0 },
+    };
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && nudgeMap[e.key]) {
+      const step = e.shiftKey ? 10 : 1;
+      const move = nudgeMap[e.key];
+      if (editor.nudgeSelected(move.dx * step, move.dy * step)) {
+        e.preventDefault();
+        return;
+      }
+    }
+
     // Tool shortcuts
     const toolMap = { v: 'select', b: 'brush', e: 'eraser', f: 'fill',
                       r: 'rect',   c: 'circle', t: 'text',  l: 'line', g: 'gradient' };

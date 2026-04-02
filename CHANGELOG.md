@@ -16,6 +16,16 @@ Versioning notes:
 
 ---
 
+## [2026-04-02] v0.1.2 — Selection And Object Editing Stability
+
+### Fixed
+- `js/editor.js`, `js/app.js`, `README.md`, `docs/ARCHITECTURE.md` — fixed select-mode layer interaction so visible editable objects stay reselectable, hidden layers no longer intercept clicks, and arrow keys can now nudge the selected object by 1px (`Shift` for 10px).
+
+### Changed
+- `js/version.js`, `index.html`, `README.md`, `CHANGELOG.md` — aligned the visible app version, release badge, and release history on `v0.1.2` before shipping the selection/editing fixes.
+
+---
+
 ## [2026-04-02] v0.1.1 — Repo Layout And Release Metadata Cleanup
 
 ### Changed

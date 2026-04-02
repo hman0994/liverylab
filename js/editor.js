@@ -149,7 +149,14 @@ class PaintEditor {
 
 
   _onSelection(obj) {
-    if (obj && obj.type === 'image' && !obj._isGuide && !obj._isSpecMap && obj.name !== '__template__') {
+    if (obj && !this._isSelectableUserObject(obj)) {
+      this.canvas.discardActiveObject();
+      this.canvas.renderAll();
+      if (this.onSelectionChanged) this.onSelectionChanged(null);
+      return;
+    }
+
+    if (obj && this._isValidPaintLayer(obj)) {
       this._activeLayer = obj;
     } else if (!obj && ['brush','eraser','fill','rect','circle','line','gradient','text'].includes(this.currentTool)) {
       // Keep the currently selected paint layer active while using any painting tool.
@@ -173,7 +180,26 @@ class PaintEditor {
       obj.name !== '__background__' &&
       !obj._isGuide &&
       !obj._isSpecMap &&
-      !obj.locked;
+      !obj.locked &&
+      obj.visible !== false;
+  }
+
+  _isInteractiveInCurrentMode(obj) {
+    if (!this._isSelectableUserObject(obj)) return false;
+    return this.currentTool === 'select';
+  }
+
+  _syncObjectInteractivity(target = null) {
+    this.canvas.getObjects().forEach(obj => {
+      obj.set({
+        selectable: obj === target ? this._isSelectableUserObject(obj) : this._isInteractiveInCurrentMode(obj),
+        evented: obj === target ? this._isSelectableUserObject(obj) : this._isInteractiveInCurrentMode(obj),
+      });
+    });
+
+    if (target && this._isSelectableUserObject(target)) {
+      this.canvas.setActiveObject(target);
+    }
   }
 
   _ensureObjectId(obj) {
@@ -200,7 +226,7 @@ class PaintEditor {
   }
 
   _getDefaultPaintLayer() {
-    return this.canvas.getObjects().find(o => this._isValidPaintLayer(o));
+    return this.canvas.getObjects().find(o => this._isValidPaintLayer(o) && o.visible !== false);
   }
 
   /**
@@ -367,7 +393,8 @@ class PaintEditor {
     this._lockedForPaint = [];
 
     if (this.currentTool === 'select') {
-      this._makeOnlyActiveInteractive(activeObject || this._activeLayer || fallbackInteractiveObject || null);
+      const selectTarget = activeObject || fallbackInteractiveObject || null;
+      this._makeOnlyActiveInteractive(selectTarget);
       return;
     }
 
@@ -591,7 +618,10 @@ class PaintEditor {
   _unlockObjectsForPainting() {
     if (!this._lockedForPaint || this._lockedForPaint.length === 0) return;
     this._lockedForPaint.forEach(({ obj, selectable, evented }) => {
-      obj.set({ selectable, evented });
+      obj.set({
+        selectable: selectable && this._isSelectableUserObject(obj),
+        evented: evented && this._isSelectableUserObject(obj),
+      });
     });
     this._lockedForPaint = [];
     this.canvas.renderAll();
@@ -605,17 +635,7 @@ class PaintEditor {
    */
   _makeOnlyActiveInteractive(target) {
     target = target || this.canvas.getActiveObject();
-    this.canvas.getObjects().forEach(obj => {
-      if (obj.name === '__template__' || obj.name === '__background__' || obj._isGuide || obj._isSpecMap) return;
-      if (obj === target) {
-        obj.set({ selectable: true, evented: true });
-      } else {
-        obj.set({ selectable: false, evented: false });
-      }
-    });
-    if (target) {
-      this.canvas.setActiveObject(target);
-    }
+    this._syncObjectInteractivity(target && this._isSelectableUserObject(target) ? target : null);
     this.canvas.renderAll();
   }
 
@@ -1087,8 +1107,7 @@ class PaintEditor {
     this._saveState();
 
     // Default active layer after loading PSD: first editable paint layer
-    const defaultLayer = this.canvas.getObjects().find(o =>
-      o.type === 'image' && !o._isGuide && !o._isSpecMap && o.name !== '__template__');
+    const defaultLayer = this._getDefaultPaintLayer();
     if (defaultLayer) {
       this.canvas.setActiveObject(defaultLayer);
       this._activeLayer = defaultLayer;
@@ -1182,19 +1201,21 @@ class PaintEditor {
   /** Create a fabric.Image from one flattened PSD layer descriptor. */
   _addPsdLayer(ld) {
     return new Promise((resolve) => {
+      const isVisible = ld.isSpecMap ? false : ld.visible;
+      const isEditable = !ld.isGuide && !ld.isSpecMap && !ld.locked && isVisible;
       const url = ld.canvas.toDataURL('image/png');
       fabric.Image.fromURL(url, (img) => {
         img.set({
           left:                     ld.left,
           top:                      ld.top,
           // Spec Map layers: always hidden & locked (future paywall feature)
-          visible:                  ld.isSpecMap ? false : ld.visible,
+          visible:                  isVisible,
           // Guide layers use template-opacity slider, spec map forced to 0
           opacity:                  ld.isSpecMap ? 0 : (ld.isGuide ? this._templateOpacity : ld.opacity),
           globalCompositeOperation: ld.blendMode,
           name:                     ld.name,
-          selectable:               !ld.isGuide && !ld.isSpecMap && !ld.locked,
-          evented:                  !ld.isGuide && !ld.isSpecMap && !ld.locked,
+          selectable:               isEditable,
+          evented:                  isEditable,
           locked:                   ld.locked || ld.isSpecMap,
           _isGuide:                 ld.isGuide,
           _isSpecMap:               ld.isSpecMap,
@@ -1326,10 +1347,28 @@ class PaintEditor {
     active.clone((cloned) => {
       cloned.set({ left: active.left + 30, top: active.top + 30 });
       if (cloned.name) cloned.name = cloned.name + ' copy';
-      this.canvas.add(cloned);
-      this.canvas.setActiveObject(cloned);
+      this._ensureObjectId(cloned);
+      const idx = this._getInsertIndex();
+      this.canvas.insertAt(cloned, idx);
+      this._makeOnlyActiveInteractive(cloned);
       this.canvas.renderAll();
     });
+  }
+
+  nudgeSelected(dx, dy) {
+    const active = this.canvas.getActiveObject();
+    if (!this._isSelectableUserObject(active)) return false;
+
+    active.set({
+      left: (active.left || 0) + dx,
+      top: (active.top || 0) + dy,
+    });
+    active.setCoords();
+    this.canvas.renderAll();
+    this._saveState();
+    if (this.onLayersChanged) this.onLayersChanged();
+    if (this.onSelectionChanged) this.onSelectionChanged(active);
+    return true;
   }
 
   bringForward() {
@@ -1370,7 +1409,7 @@ class PaintEditor {
     const internalIndex = objects.length - 1 - visualIndex;
     if (internalIndex < 0) return;
     const obj = objects[internalIndex];
-    if (obj && !obj.locked && !obj._isGuide && !obj._isSpecMap && obj.name !== '__template__') {
+    if (this._isSelectableUserObject(obj)) {
       this._activeLayer = (obj.type === 'image') ? obj : this._activeLayer;
       // Switch to select tool first, then make this specific object interactive
       this.currentTool = 'select';
@@ -1397,9 +1436,22 @@ class PaintEditor {
     const obj = objects[internalIndex];
     // Block spec map layers from being toggled visible
     if (obj._isSpecMap) return;
-    obj.set('visible', !obj.visible);
+    const nextVisible = !obj.visible;
+    obj.set({
+      visible: nextVisible,
+      selectable: nextVisible && this._isInteractiveInCurrentMode(obj),
+      evented: nextVisible && this._isInteractiveInCurrentMode(obj),
+    });
+    if (!nextVisible && this.canvas.getActiveObject() === obj) {
+      this.canvas.discardActiveObject();
+      if (this._activeLayer === obj) this._activeLayer = this._getDefaultPaintLayer();
+    } else if (nextVisible && this.currentTool === 'select') {
+      this._syncObjectInteractivity(this.canvas.getActiveObject());
+    }
     this.canvas.renderAll();
+    this._saveState();
     if (this.onLayersChanged) this.onLayersChanged();
+    if (this.onSelectionChanged) this.onSelectionChanged(this.canvas.getActiveObject() || null);
   }
 
   deleteLayerByIndex(visualIndex) {

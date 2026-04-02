@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-	<img alt="Release" src="https://img.shields.io/badge/release-v0.1.1-111111?style=for-the-badge">
+	<img alt="Release" src="https://img.shields.io/badge/release-v0.1.2-111111?style=for-the-badge">
 	<img alt="Exports" src="https://img.shields.io/badge/export-PNG%20%7C%2032--bit%20TGA-d7ff3f?style=for-the-badge">
 	<img alt="Cars" src="https://img.shields.io/badge/built--in%20cars-164-111111?style=for-the-badge">
 </p>
@@ -21,7 +21,7 @@
 
 Livery Lab gets you from template to export quickly: open the app, choose a car, paint, and drop the result into iRacing.
 
-Current release: **v0.1.1**
+Current release: **v0.1.2**
 
 ## Why It Stands Out
 
@@ -81,6 +81,8 @@ Sizes: `1024x1024`, `2048x2048`
 - `L` Line
 - `G` Gradient
 - `T` Text
+- `Arrow keys` Nudge the selected object by 1px
+- `Shift` + `Arrow keys` Nudge the selected object by 10px
 - `Delete` or `Backspace` Delete selection
 - `Ctrl+Z` or `Cmd+Z` Undo
 - `Ctrl+Y`, `Ctrl+Shift+Z`, or `Cmd+Shift+Z` Redo

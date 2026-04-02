@@ -152,8 +152,11 @@ The manifest is fetched by `js/app.js` and rendered into the startup modal.
 | `deleteSelected()` | Delete currently selected objects |
 | `duplicateSelected()` | Duplicate currently selected objects |
 | `bringForward()` / `sendBackward()` | Z-order manipulation |
+| `nudgeSelected(dx, dy)` | Move the selected editable object and record history |
 | `setFont(family)` / `setFontSize(n)` | Text tool configuration |
 | `setStrokeWidth(n)` | Shape stroke width |
+
+Select-mode behavior keeps all visible editable user layers clickable, so canvas clicks follow normal topmost-visible hit testing. Hidden, guide, spec-map, template, and background layers are kept non-interactive, while paint tools still lock object manipulation until the user returns to Select.
 
 **Brush/eraser rasterization (`_onPathCreated`):**
 When a freehand stroke finishes, it's merged directly onto the target image layer
