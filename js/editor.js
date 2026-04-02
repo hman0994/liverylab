@@ -48,7 +48,7 @@ class PaintEditor {
     this._redoStack = [];
     this._suspendHistory = false;
     this._nextObjectId = 1;
-    this._historyStateProperties = ['_id', 'name', 'locked', '_isGuide', '_isSpecMap', '_groupName', 'globalCompositeOperation'];
+    this._historyStateProperties = ['_id', 'name', 'locked', '_isGuide', '_isSpecMap', '_groupName', 'globalCompositeOperation', 'perPixelTargetFind'];
 
     // ── Template reference ─────────────────────────────────────
     this._templateObject = null;
@@ -167,6 +167,13 @@ class PaintEditor {
     } else {
       this._activeLayer = null;
     }
+
+    // When selection is cleared in select mode, restore interactivity for all valid
+    // objects so the next canvas click can pick any visible layer.
+    if (!obj && this.currentTool === 'select') {
+      this._syncObjectInteractivity(null);
+    }
+
     if (this.onSelectionChanged) this.onSelectionChanged(obj || null);
   }
 
@@ -191,10 +198,14 @@ class PaintEditor {
 
   _syncObjectInteractivity(target = null) {
     this.canvas.getObjects().forEach(obj => {
-      obj.set({
-        selectable: obj === target ? this._isSelectableUserObject(obj) : this._isInteractiveInCurrentMode(obj),
-        evented: obj === target ? this._isSelectableUserObject(obj) : this._isInteractiveInCurrentMode(obj),
-      });
+      // When a specific target is provided: only that object is interactive so that
+      // higher-stacked layers (decals, mask) cannot intercept clicks meant for the
+      // selected layer.  When target is null: all valid objects are interactive in
+      // select mode so the user can click to pick any layer.
+      const interactive = target
+        ? (obj === target && this._isSelectableUserObject(obj))
+        : this._isInteractiveInCurrentMode(obj);
+      obj.set({ selectable: interactive, evented: interactive });
     });
 
     if (target && this._isSelectableUserObject(target)) {
@@ -289,6 +300,7 @@ class PaintEditor {
       _isSpecMap:               target._isSpecMap,
       _groupName:               target._groupName,
       globalCompositeOperation: target.globalCompositeOperation,
+      perPixelTargetFind:       !!target.perPixelTargetFind,
     };
 
     fabric.Image.fromURL(mergedDataUrl, (newImg) => {
@@ -378,9 +390,6 @@ class PaintEditor {
     const activeObject = this._isSelectableUserObject(restoredSelectedObject)
       ? restoredSelectedObject
       : null;
-    const fallbackInteractiveObject = this.canvas.getObjects().find(obj =>
-      this._isSelectableUserObject(obj)
-    );
 
     if (this._isValidPaintLayer(restoredActiveLayer)) {
       this._activeLayer = restoredActiveLayer;
@@ -393,8 +402,9 @@ class PaintEditor {
     this._lockedForPaint = [];
 
     if (this.currentTool === 'select') {
-      const selectTarget = activeObject || fallbackInteractiveObject || null;
-      this._makeOnlyActiveInteractive(selectTarget);
+      // Restore to the previously active object if one existed; otherwise pass
+      // null so all valid objects become selectable (all-open click-to-select).
+      this._makeOnlyActiveInteractive(activeObject || null);
       return;
     }
 
@@ -1007,7 +1017,7 @@ class PaintEditor {
       fabric.Image.fromURL(e.target.result, (img) => {
         if (img.width > 1200) img.scaleToWidth(600);
         const groupName = (this._activeLayer && this._activeLayer._groupName) || '';
-        img.set({ left: 300, top: 300, name: file.name.replace(/\.[^.]+$/, ''), _groupName: groupName });
+        img.set({ left: 300, top: 300, name: file.name.replace(/\.[^.]+$/, ''), _groupName: groupName, perPixelTargetFind: true });
         const idx = this._getInsertIndex();
         this._ensureObjectId(img);
         this.canvas.insertAt(img, idx);
@@ -1220,6 +1230,9 @@ class PaintEditor {
           _isGuide:                 ld.isGuide,
           _isSpecMap:               ld.isSpecMap,
           _groupName:               ld.groupName,
+          // Per-pixel hit-testing so clicks on fully-transparent areas of one
+          // layer (e.g. a decals or mask layer) fall through to the layer below.
+          perPixelTargetFind:       true,
         });
         this._ensureObjectId(img);
         this.canvas.add(img);
