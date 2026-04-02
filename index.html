@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Livery Lab — Free iRacing Paint Editor</title>
+  <meta name="description" content="Free browser-based livery editor for iRacing. Design custom liveries for 160+ cars, export TGA/PNG, layer-based painting." />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- ── External Libraries (CDN, no install needed) ── -->
+  <!-- Fabric.js 5.3 — 2D canvas editor -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+
+  <!-- ag-psd — PSD file reader (no install needed) -->
+  <script src="https://cdn.jsdelivr.net/npm/ag-psd@30.1.0/dist/bundle.js"></script>
+
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     Hidden file inputs (triggered programmatically)
+     ══════════════════════════════════════════════════════ -->
+<input type="file" id="input-template-file" accept=".png,.jpg,.jpeg,.tga,.psd" class="sr-only" />
+<input type="file" id="input-image-file"    accept=".png,.jpg,.jpeg,.svg,.gif,.webp" class="sr-only" />
+<input type="file" id="input-project-file"  accept=".json" class="sr-only" />
+
+<!-- ══════════════════════════════════════════════════════
+     Toast notification root
+     ══════════════════════════════════════════════════════ -->
+<div id="toast-root" aria-live="polite"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     Template Setup Modal
+     ══════════════════════════════════════════════════════ -->
+<div id="template-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="tmpl-title">
+  <div class="modal">
+    <h2 id="tmpl-title">🏎️ Welcome to Livery Lab</h2>
+    <p>
+      Pick a car to start painting, or load your own template.
+    </p>
+
+    <!-- Car search + list -->
+    <div id="car-selector">
+      <div id="car-picker-controls">
+        <div id="car-category" aria-label="Filter cars by category" role="group"></div>
+        <input type="text" id="car-search" placeholder="Search 160+ cars…" autocomplete="off" />
+      </div>
+      <div id="car-list">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-option" id="btn-upload-template">
+        <span class="icon">📂</span>
+        <span class="option-text">
+          <strong>Upload custom template (.tga / .png / .psd)</strong>
+          <span>Use your own template file if you have one.</span>
+        </span>
+      </button>
+      <button class="modal-option" id="btn-skip-template">
+        <span class="icon">🎨</span>
+        <span class="option-text">
+          <strong>Start with blank white canvas</strong>
+          <span>You can load a template at any time using the toolbar.</span>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     Export Modal
+     ══════════════════════════════════════════════════════ -->
+<div id="export-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="export-title">
+  <div class="modal">
+    <h2 id="export-title">Export Paint</h2>
+    <p>
+      Choose your resolution and format. <strong id="export-resolution-hint">2048×2048 TGA</strong> is the iRacing standard.<br>
+      Rename the file to <code>car_XXXXXXXX.tga</code> (your iRacing customer ID) and place it in:<br>
+      <code id="export-folder-hint">Documents\iRacing\paint\your_car_folder\</code>
+    </p>
+
+    <!-- Resolution picker -->
+    <div class="export-grid">
+      <button class="export-size-btn" data-size="1024">
+        1024×1024
+        <small>Fastest — low detail</small>
+      </button>
+      <button class="export-size-btn selected" data-size="2048">
+        2048×2048 ★
+        <small>iRacing standard</small>
+      </button>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-bottom:12px;">
+      <button id="btn-do-export-png" class="btn btn-secondary" style="flex:1;">
+        ⬇ Download PNG
+      </button>
+      <button id="btn-do-export-tga" class="btn btn-primary" style="flex:1;">
+        ⬇ Download TGA  <small style="font-weight:400;opacity:.75;">(recommended)</small>
+      </button>
+    </div>
+
+    <button id="btn-close-export" class="btn btn-ghost" style="width:100%;">Cancel</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     Main App Shell
+     ══════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- ── Top Bar ─────────────────────────────────────────── -->
+  <header id="topbar">
+    <!-- Logo -->
+    <div class="logo">
+      <img src="fullLogo.png" alt="The Livery Lab logo" />
+    </div>
+
+    <div class="app-version" id="app-version-badge" title="Current app version">v1.3.0-dev</div>
+
+    <div class="car-label" id="car-label">No car selected · 2048×2048</div>
+
+    <!-- Template notice -->
+    <div class="template-notice">
+      💡 Get the official template at
+      <a href="https://www.tradingpaints.com" target="_blank" rel="noopener">tradingpaints.com</a>
+    </div>
+
+    <div class="spacer"></div>
+
+    <!-- Save / Load -->
+    <button id="btn-save-project" class="btn btn-ghost btn-sm" title="Save project as JSON">💾 Save Project</button>
+    <button id="btn-load-project" class="btn btn-ghost btn-sm" title="Load a saved project">📂 Load Project</button>
+
+    <!-- Export -->
+    <button id="btn-open-export" class="btn btn-primary" title="Export PNG or TGA">⬇ Export Paint</button>
+  </header>
+
+  <!-- ── Left Toolbar ─────────────────────────────────────── -->
+  <nav id="toolbar" aria-label="Drawing tools">
+
+    <button class="tool-btn active" data-tool="select" title="Select (V)">
+      ↖
+      <span class="tooltip">Select &amp; Move  [V]</span>
+    </button>
+
+    <div class="toolbar-sep"></div>
+
+    <button class="tool-btn" data-tool="brush" title="Brush (B)">
+      🖌
+      <span class="tooltip">Freehand Brush  [B]</span>
+    </button>
+
+    <button class="tool-btn" data-tool="eraser" title="Eraser (E)">
+      ⬜
+      <span class="tooltip">Eraser  [E]</span>
+    </button>
+
+    <button class="tool-btn" data-tool="fill" title="Fill (F)">
+      🪣
+      <span class="tooltip">Flood Fill  [F]</span>
+    </button>
+
+    <div class="toolbar-sep"></div>
+
+    <button class="tool-btn" data-tool="rect" title="Rectangle (R)">
+      ▭
+      <span class="tooltip">Rectangle  [R]</span>
+    </button>
+
+    <button class="tool-btn" data-tool="circle" title="Circle (C)">
+      ⬭
+      <span class="tooltip">Ellipse / Circle  [C]</span>
+    </button>
+
+    <button class="tool-btn" data-tool="line" title="Line (L)">
+      ╱
+      <span class="tooltip">Line  [L]</span>
+    </button>
+
+    <button class="tool-btn" data-tool="gradient" title="Gradient (G)">
+      🌈
+      <span class="tooltip">Add Gradient Layer  [G]</span>
+    </button>
+
+    <div class="toolbar-sep"></div>
+
+    <button class="tool-btn" data-tool="text" title="Text (T)">
+      T
+      <span class="tooltip">Text  [T]</span>
+    </button>
+
+    <button class="tool-btn" data-tool="upload-image" title="Upload Image (U)">
+      🖼
+      <span class="tooltip">Upload Decal / Logo  [U]</span>
+    </button>
+
+    <div class="toolbar-sep"></div>
+
+    <button class="tool-btn" data-tool="load-template" title="Load Template">
+      📋
+      <span class="tooltip">Load / Replace Template</span>
+    </button>
+
+  </nav>
+
+  <!-- ── Canvas Viewport ──────────────────────────────────── -->
+  <main id="canvas-wrap" aria-label="Paint canvas">
+    <div id="canvas-inner">
+      <canvas id="paint-canvas"></canvas>
+    </div>
+  </main>
+
+  <!-- ── Right Panel ──────────────────────────────────────── -->
+  <aside id="right-panel" aria-label="Properties and layers">
+
+    <!-- ── Tool Properties ──────────────────────────────── -->
+    <div class="panel-section">
+      <div class="panel-header" data-toggle="props-body">
+        <span>Properties</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div id="props-body" class="panel-body">
+
+        <!-- Primary Colour -->
+        <div class="prop-row">
+          <span class="prop-label">Primary</span>
+          <div class="color-swatch-wrap">
+            <input type="color" id="prop-primary-color" value="#cc0000" title="Primary colour" />
+            <span style="font-size:11px;color:var(--text-dim);">Paint / Fill</span>
+          </div>
+          <div class="color-swatch-wrap props-group" data-tools="gradient,rect,circle,line" style="margin-left:8px;">
+            <input type="color" id="prop-secondary-color" value="#ffffff" title="Secondary colour" />
+            <span style="font-size:11px;color:var(--text-dim);">Gradient / Stroke</span>
+          </div>
+        </div>
+
+        <!-- Background colour -->
+        <div class="prop-row">
+          <span class="prop-label">Background</span>
+          <div class="color-swatch-wrap">
+            <input type="color" id="prop-bg-color" value="#ffffff" title="Canvas background colour" />
+            <span style="font-size:11px;color:var(--text-dim);">Car body base</span>
+          </div>
+        </div>
+
+        <div class="toolbar-sep" style="width:100%;margin:6px 0;"></div>
+
+        <!-- Brush size -->
+        <div class="prop-row props-group" data-tools="brush,eraser,line">
+          <span class="prop-label">Size</span>
+          <input type="range" id="prop-brush-size" min="1" max="200" value="20" />
+          <span class="range-val" id="prop-brush-size-val">20</span>
+        </div>
+
+        <!-- Opacity -->
+        <div class="prop-row">
+          <span class="prop-label">Opacity</span>
+          <input type="range" id="prop-opacity" min="0" max="1" step="0.01" value="1" />
+          <span class="range-val" id="prop-opacity-val">100%</span>
+        </div>
+
+        <!-- Stroke width -->
+        <div class="prop-row props-group" data-tools="rect,circle,select">
+          <span class="prop-label">Stroke</span>
+          <input type="range" id="prop-stroke-width" min="0" max="40" value="3" />
+          <span class="range-val" id="prop-stroke-width-val">3</span>
+        </div>
+
+        <!-- Font (text tool) -->
+        <div class="props-group" data-tools="text">
+          <div class="prop-row">
+            <span class="prop-label">Font</span>
+            <select id="prop-font">
+              <option>Arial</option>
+              <option>Arial Black</option>
+              <option>Impact</option>
+              <option>Courier New</option>
+              <option>Georgia</option>
+              <option>Verdana</option>
+              <option>Trebuchet MS</option>
+              <option>Times New Roman</option>
+            </select>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">Size</span>
+            <input type="number" id="prop-font-size" value="120" min="8" max="800" step="4" />
+            <span style="font-size:11px;color:var(--text-dim);">px</span>
+          </div>
+        </div>
+
+        <!-- Template opacity + Layer opacity -->
+        <div class="toolbar-sep" style="width:100%;margin:6px 0;"></div>
+        <div class="prop-row">
+          <span class="prop-label">Layer<br>opacity</span>
+          <input type="range" id="layer-opacity" min="0" max="1" step="0.01" value="1" />
+          <span class="range-val" id="layer-opacity-val">100%</span>
+        </div>
+        <div class="prop-row">
+          <span class="prop-label">Template</span>
+          <input type="range" id="tmpl-opacity" min="0" max="1" step="0.05" value="1" />
+          <span class="range-val" id="tmpl-opacity-val">100%</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Object Actions ────────────────────────────────── -->
+    <div class="panel-section">
+      <div class="panel-header">
+        <span>Object</span>
+      </div>
+      <div class="panel-body compact" style="display:flex;flex-wrap:wrap;gap:4px;">
+        <button id="btn-bring-fwd" class="btn btn-ghost btn-sm" title="Bring forward">⬆ Fwd</button>
+        <button id="btn-send-bck"  class="btn btn-ghost btn-sm" title="Send backward">⬇ Back</button>
+        <button id="btn-duplicate" class="btn btn-ghost btn-sm" title="Duplicate (Ctrl+D)">⧉ Dupe</button>
+        <button id="btn-delete"    class="btn btn-danger  btn-sm" title="Delete (Del)">🗑 Delete</button>
+      </div>
+    </div>
+
+    <!-- ── Layers ─────────────────────────────────────────── -->
+    <div class="panel-section flex-fill">
+      <div class="panel-header" data-toggle="layers-list">
+        <span>Layers</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div id="layers-list" class="panel-body" style="overflow-y:auto;padding:8px;flex:1;"></div>
+    </div>
+
+  </aside>
+
+  <!-- ── Bottom Bar ─────────────────────────────────────────── -->
+  <footer id="bottombar">
+    <!-- Undo / Redo -->
+    <button id="btn-undo" class="btn btn-ghost btn-sm" title="Undo (Ctrl+Z)">↺ Undo</button>
+    <button id="btn-redo" class="btn btn-ghost btn-sm" title="Redo (Ctrl+Y)">↻ Redo</button>
+
+    <div class="sep"></div>
+
+    <!-- Keyboard shortcut hint -->
+    <span style="font-size:11px;color:var(--text-dim);">
+      B=Brush · E=Eraser · F=Fill · R=Rect · C=Circle · T=Text · Del=Delete
+    </span>
+
+    <div class="sep"></div>
+
+    <!-- Zoom controls -->
+    <div class="zoom-wrap">
+      <button id="btn-zoom-out" class="icon-btn" title="Zoom out">−</button>
+      <input type="range" id="zoom-slider" min="5" max="300" value="40" style="width:90px;" />
+      <button id="btn-zoom-in" class="icon-btn" title="Zoom in">+</button>
+      <span id="zoom-label">40%</span>
+      <button id="btn-zoom-fit" class="btn btn-ghost btn-sm" title="Zoom to fit">Fit</button>
+    </div>
+  </footer>
+
+</div><!-- /#app -->
+
+<!-- ── Application Scripts ──────────────────────────────── -->
+<script src="lib/tga.js"></script>
+<script src="js/export.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/version.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

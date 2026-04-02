@@ -1,0 +1,6 @@
+# This file exceeds GitHub's 100 MB hard limit and cannot be stored in the repo.
+# Host it as a GitHub Release asset if needed.
+templates/Ferrari 296 GT3.psd
+
+# Node / tooling
+node_modules/

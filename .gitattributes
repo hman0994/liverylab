@@ -1,0 +1,3 @@
+# PSDs are committed as regular binary blobs (no LFS) so GitHub Pages can serve them directly.
+# The one file over 100 MB (Ferrari 296 GT3.psd) is excluded via .gitignore.
+*.psd binary

@@ -1,0 +1,1314 @@
+[
+  {
+    "name": "Acura ARX06 GTP",
+    "file": "Acura ARX06 GTP.psd",
+    "folder": "acura_arx06_gtp",
+    "category": "Prototype",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Acura NSX EVO22 GT3",
+    "file": "Acura NSX EVO22 GT3.psd",
+    "folder": "acura_nsx_evo22_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "ARCA Chevy SS",
+    "file": "ARCA Chevy SS.psd",
+    "folder": "arca_chevy_ss",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "ARCA Ford Mustang",
+    "file": "ARCA Ford Mustang.psd",
+    "folder": "arca_ford_mustang",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "ARCA Toyota Camry",
+    "file": "ARCA Toyota Camry.psd",
+    "folder": "arca_toyota_camry",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Aston Martin DBR9 GT1",
+    "file": "Aston Martin DBR9 GT1.psd",
+    "folder": "aston_martin_dbr9_gt1",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Aston Martin Vantage EVO GT3",
+    "file": "Aston Martin Vantage EVO GT3.psd",
+    "folder": "aston_martin_vantage_evo_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Aston Martin Vantage GT4",
+    "file": "Aston Martin Vantage GT4.psd",
+    "folder": "aston_martin_vantage_gt4",
+    "category": "GT4",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Audi 90 GTO",
+    "file": "Audi 90 GTO.psd",
+    "folder": "audi_90_gto",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Audi R18",
+    "file": "Audi R18.psd",
+    "folder": "audi_r18",
+    "category": "Prototype",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Audi R8 LMS EVO II GT3",
+    "file": "Audi R8 LMS EVO II GT3.psd",
+    "folder": "audi_r8_lms_evo_ii_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Audi R8 LMS GT3",
+    "file": "Audi R8 LMS GT3.psd",
+    "folder": "audi_r8_lms_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Audi RS3 LMS Gen 2",
+    "file": "Audi RS3 LMS Gen 2.psd",
+    "folder": "audi_rs3_lms_gen_2",
+    "category": "Touring Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Audi RS3 LMS",
+    "file": "Audi RS3 LMS.psd",
+    "folder": "audi_rs3_lms",
+    "category": "Touring Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "BMW M Hybrid V8",
+    "file": "BMW M Hybrid V8.psd",
+    "folder": "bmw_m_hybrid_v8",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "BMW M2 CS Racing",
+    "file": "BMW M2 CS Racing.psd",
+    "folder": "bmw_m2_cs_racing",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "BMW M4 EVO GT4",
+    "file": "BMW M4 EVO GT4.psd",
+    "folder": "bmw_m4_evo_gt4",
+    "category": "GT4",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "BMW M4 GT3",
+    "file": "BMW M4 GT3.psd",
+    "folder": "bmw_m4_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "BMW M4 GT4",
+    "file": "BMW M4 GT4.psd",
+    "folder": "bmw_m4_gt4",
+    "category": "GT4",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "BMW M8 GTE",
+    "file": "BMW M8 GTE.psd",
+    "folder": "bmw_m8_gte",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "BMW Z4 GT3",
+    "file": "BMW Z4 GT3.psd",
+    "folder": "bmw_z4_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Buick Lesabre 1987",
+    "file": "Buick Lesabre 1987.psd",
+    "folder": "buick_lesabre_1987",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Cadillac CTS-VR",
+    "file": "Cadillac CTS-VR.psd",
+    "folder": "cadillac_cts_vr",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Cadillac VSeriesR GTP",
+    "file": "Cadillac VSeriesR GTP.psd",
+    "folder": "cadillac_vseriesr_gtp",
+    "category": "Prototype",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Camaro Class B 2019",
+    "file": "Chevrolet Camaro Class B 2019.psd",
+    "folder": "chevrolet_camaro_class_b_2019",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Camaro Class B",
+    "file": "Chevrolet Camaro Class B.psd",
+    "folder": "chevrolet_camaro_class_b",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Camaro ZL1 Gen 6",
+    "file": "Chevrolet Camaro ZL1 Gen 6.psd",
+    "folder": "chevrolet_camaro_zl1_gen_6",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Camaro ZL1 Nextgen",
+    "file": "Chevrolet Camaro ZL1 Nextgen.psd",
+    "folder": "chevrolet_camaro_zl1_nextgen",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Corvette C7 Daytona Prototype",
+    "file": "Chevrolet Corvette C7 Daytona Prototype.psd",
+    "folder": "chevrolet_corvette_c7_daytona_prototype",
+    "category": "Prototype",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Corvette C8R GTE",
+    "file": "Chevrolet Corvette C8R GTE.psd",
+    "folder": "chevrolet_corvette_c8r_gte",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Corvette Z06 GT3r",
+    "file": "Chevrolet Corvette Z06 GT3r.psd",
+    "folder": "chevrolet_corvette_z06_gt3r",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Impala Class A",
+    "file": "Chevrolet Impala Class A.psd",
+    "folder": "chevrolet_impala_class_a",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Impala Class B 2011",
+    "file": "Chevrolet Impala Class B 2011.psd",
+    "folder": "chevrolet_impala_class_b_2011",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Impala GEN 4",
+    "file": "Chevrolet Impala GEN 4.psd",
+    "folder": "chevrolet_impala_gen_4",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Impala SS Class B",
+    "file": "Chevrolet Impala SS Class B.psd",
+    "folder": "chevrolet_impala_ss_class_b",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Monte Carlo 1987",
+    "file": "Chevrolet Monte Carlo 1987.psd",
+    "folder": "chevrolet_monte_carlo_1987",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Monte Carlo Gen4 SS",
+    "file": "Chevrolet Monte Carlo Gen4 SS.psd",
+    "folder": "chevrolet_monte_carlo_gen4_ss",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Monte Carlo Gen4",
+    "file": "Chevrolet Monte Carlo Gen4.psd",
+    "folder": "chevrolet_monte_carlo_gen4",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Silverado Truck 2015",
+    "file": "Chevrolet Silverado Truck 2015.psd",
+    "folder": "chevrolet_silverado_2015",
+    "category": "Truck",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Silverado Truck 2019",
+    "file": "Chevrolet Silverado Truck 2019.psd",
+    "folder": "chevrolet_silverado_2019",
+    "category": "Truck",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet Silverado Truck",
+    "file": "Chevrolet Silverado Truck.psd",
+    "folder": "chevrolet_silverado",
+    "category": "Truck",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Chevrolet SS",
+    "file": "Chevrolet SS.psd",
+    "folder": "chevrolet_ss",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Corvette C6r",
+    "file": "Corvette C6r.psd",
+    "folder": "corvette_c6r",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Dallara F312 F3",
+    "file": "Dallara F312 F3.psd",
+    "folder": "dallara_f312_f3",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Dallara IL15",
+    "file": "Dallara IL15.psd",
+    "folder": "dallara_il15",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Dallara IR01",
+    "file": "Dallara IR01.psd",
+    "folder": "dallara_ir01",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Dallara P217",
+    "file": "Dallara P217.psd",
+    "folder": "dallara_p217",
+    "category": "Prototype",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Dirt Late Model",
+    "file": "Dirt Late Model.psd",
+    "folder": "dirt_late_model",
+    "category": "Dirt Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Dirt Micro Sprint",
+    "file": "Dirt Micro Sprint.psd",
+    "folder": "dirt_micro_sprint",
+    "category": "Dirt Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Dirt Midget",
+    "file": "Dirt Midget.psd",
+    "folder": "dirt_midget",
+    "category": "Dirt Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Dirt Mini Stock",
+    "file": "Dirt Mini Stock.psd",
+    "folder": "dirt_mini_stock",
+    "category": "Dirt Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Dirt Modified",
+    "file": "Dirt Modified.psd",
+    "folder": "dirt_modified",
+    "category": "Dirt Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Dirt Sprint",
+    "file": "Dirt Sprint.psd",
+    "folder": "dirt_sprint",
+    "category": "Dirt Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Dirt Street Stock",
+    "file": "Dirt Street Stock.psd",
+    "folder": "dirt_street_stock",
+    "category": "Dirt Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Dirt UMP Modified",
+    "file": "Dirt UMP Modified.psd",
+    "folder": "dirt_ump_modified",
+    "category": "Dirt Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ferrari 296 Challenge",
+    "file": "Ferrari 296 Challenge.psd",
+    "folder": "ferrari_296_challenge",
+    "category": "One-Make",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ferrari 296 GT3",
+    "file": "Ferrari 296 GT3.psd",
+    "folder": "ferrari_296_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ferrari 488 GT3",
+    "file": "Ferrari 488 GT3.psd",
+    "folder": "ferrari_488_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ferrari 488 GTE",
+    "file": "Ferrari 488 GTE.psd",
+    "folder": "ferrari_488_gte",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ferrari 499P",
+    "file": "Ferrari 499P.psd",
+    "folder": "ferrari_499p",
+    "category": "Prototype",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ferrari EVO GT3",
+    "file": "Ferrari EVO GT3.psd",
+    "folder": "ferrari_evo_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "FIA Cross Car",
+    "file": "FIA Cross Car.psd",
+    "folder": "fia_cross_car",
+    "category": "Rallycross",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford F150",
+    "file": "Ford F150.psd",
+    "folder": "ford_f150",
+    "category": "Truck",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford Fiesta ST WRC",
+    "file": "Ford Fiesta ST WRC.psd",
+    "folder": "ford_fiesta_st_wrc",
+    "category": "Rallycross",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford Fusion Gen 6",
+    "file": "Ford Fusion Gen 6.psd",
+    "folder": "ford_fusion_gen_6",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford GT 2017",
+    "file": "Ford GT 2017.psd",
+    "folder": "ford_gt_2017",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford GT GT3",
+    "file": "Ford GT GT3.psd",
+    "folder": "ford_gt_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford GT",
+    "file": "Ford GT.psd",
+    "folder": "ford_gt",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford Mustang Class B 2013",
+    "file": "Ford Mustang Class B 2013.psd",
+    "folder": "ford_mustang_class_b_2013",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford Mustang Class B 2019",
+    "file": "Ford Mustang Class B 2019.psd",
+    "folder": "ford_mustang_class_b_2019",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford Mustang Gen 6",
+    "file": "Ford Mustang Gen 6.psd",
+    "folder": "ford_mustang_gen_6",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford Mustang GT3",
+    "file": "Ford Mustang GT3.psd",
+    "folder": "ford_mustang_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford Mustang GT4",
+    "file": "Ford Mustang GT4.psd",
+    "folder": "ford_mustang_gt4",
+    "category": "GT4",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford Mustang Nextgen",
+    "file": "Ford Mustang Nextgen.psd",
+    "folder": "ford_mustang_nextgen",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford Taurus Gen4 SS",
+    "file": "Ford Taurus Gen4 SS.psd",
+    "folder": "ford_taurus_gen4_ss",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford Taurus Gen4",
+    "file": "Ford Taurus Gen4.psd",
+    "folder": "ford_taurus_gen4",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford Thunderbird 1987",
+    "file": "Ford Thunderbird 1987.psd",
+    "folder": "ford_thunderbird_1987",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford V8",
+    "file": "Ford V8.psd",
+    "folder": "ford_v8",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ford V8sc 2014",
+    "file": "Ford V8sc 2014.psd",
+    "folder": "ford_v8sc_2014",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Formula IR04",
+    "file": "Formula IR04.psd",
+    "folder": "fia_f4",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Formula Mazda",
+    "file": "Formula Mazda.psd",
+    "folder": "formula_mazda",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Formula Renault 2.0",
+    "file": "Formula Renault 2.0.psd",
+    "folder": "formula_renault_2_0",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Formula Renault 3_5",
+    "file": "Formula Renault 3_5.psd",
+    "folder": "formula_renault_3_5",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Formula Skip Barber 2000",
+    "file": "Formula Skip Barber 2000.psd",
+    "folder": "formula_skip_barber_2000",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Formula Vee",
+    "file": "Formula Vee.psd",
+    "folder": "formula_vee",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "FR500S Mustang",
+    "file": "FR500S Mustang.psd",
+    "folder": "fr500s_mustang",
+    "category": "One-Make",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Holden Commodore VF V8",
+    "file": "Holden Commodore VF V8.psd",
+    "folder": "holden_commodore_vf_v8",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Honda Civic Type R",
+    "file": "Honda Civic Type R.psd",
+    "folder": "honda_civic_type_r",
+    "category": "Touring Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Honda Performance Development ARX01C",
+    "file": "Honda Performance Development ARX01C.psd",
+    "folder": "honda_performance_development_arx01c",
+    "category": "Prototype",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Hyundai Elantra N TC",
+    "file": "Hyundai Elantra N TC.psd",
+    "folder": "hyundai_elantra_n_tc",
+    "category": "Touring Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Hyundai Veloster N",
+    "file": "Hyundai Veloster N.psd",
+    "folder": "hyundai_veloster_n",
+    "category": "Touring Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Indy Pro PM18",
+    "file": "Indy Pro PM18.psd",
+    "folder": "indy_pro_pm18",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Indycar Dallara DW12",
+    "file": "Indycar Dallara DW12.psd",
+    "folder": "indycar_dallara_dw12",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Indycar Dallara IR18",
+    "file": "Indycar Dallara IR18.psd",
+    "folder": "indycar_dallara_ir18",
+    "category": "Prototype",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "IRL Dallara",
+    "file": "IRL Dallara.psd",
+    "folder": "irl_dallara",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Kia Optima",
+    "file": "Kia Optima.psd",
+    "folder": "kia_optima",
+    "category": "Touring Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Lamborghini EVO GT3",
+    "file": "Lamborghini EVO GT3.psd",
+    "folder": "lamborghini_evo_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Late Model Stock",
+    "file": "Late Model Stock.psd",
+    "folder": "late_model_stock",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Legends Ford34c Dirt",
+    "file": "Legends Ford34c Dirt.psd",
+    "folder": "legends_ford34c_dirt",
+    "category": "Dirt Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Legends Ford34c",
+    "file": "Legends Ford34c.psd",
+    "folder": "legends_ford34c",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ligier JS P320",
+    "file": "Ligier JS P320.psd",
+    "folder": "ligier_js_p320",
+    "category": "Prototype",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Lotus 49",
+    "file": "Lotus 49.psd",
+    "folder": "lotus_49",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Lotus 79",
+    "file": "Lotus 79.psd",
+    "folder": "lotus_79",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Mazda MX5 2016",
+    "file": "Mazda MX5 2016.psd",
+    "folder": "mazda_mx5_2016",
+    "category": "One-Make",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Mazda MX5",
+    "file": "Mazda MX5.psd",
+    "folder": "mazda_mx5",
+    "category": "One-Make",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Mclaren 570s GT4",
+    "file": "Mclaren 570s GT4.psd",
+    "folder": "mclaren_570s_gt4",
+    "category": "GT4",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "McLaren 720s EVO GT3",
+    "file": "McLaren 720s EVO GT3.psd",
+    "folder": "mclaren_720s_evo_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Mclaren MP4-30",
+    "file": "Mclaren MP4-30.psd",
+    "folder": "mclaren_mp4_30",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Mclaren MP4",
+    "file": "Mclaren MP4.psd",
+    "folder": "mclaren_mp4",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Mercedes AMG GT3",
+    "file": "Mercedes AMG GT3.psd",
+    "folder": "mercedes_amg_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Mercedes AMG GT4",
+    "file": "Mercedes AMG GT4.psd",
+    "folder": "mercedes_amg_gt4",
+    "category": "GT4",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Mercedes-AMG GT3 2020",
+    "file": "Mercedes-AMG GT3 2020.psd",
+    "folder": "mercedes_amg_gt3_2020",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Mini Stock",
+    "file": "Mini Stock.psd",
+    "folder": "mini_stock",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Nissan GTP ZXT",
+    "file": "Nissan GTP ZXT.psd",
+    "folder": "nissan_gtp_zxt",
+    "category": "Prototype",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Pontiac Grand Prix 1987",
+    "file": "Pontiac Grand Prix 1987.psd",
+    "folder": "pontiac_grand_prix_1987",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Pontiac Solstice",
+    "file": "Pontiac Solstice.psd",
+    "folder": "pontiac_solstice",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Porsche 718 GT4",
+    "file": "Porsche 718 GT4.psd",
+    "folder": "porsche_718_gt4",
+    "category": "GT4",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Porsche 911 Cup",
+    "file": "Porsche 911 Cup.psd",
+    "folder": "porsche_911_cup",
+    "category": "One-Make",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Porsche 911 RSR",
+    "file": "Porsche 911 RSR.psd",
+    "folder": "porsche_911_rsr",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Porsche 911R GT3",
+    "file": "Porsche 911R GT3.psd",
+    "folder": "porsche_911r_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Porsche 919 Hybrid",
+    "file": "Porsche 919 Hybrid.psd",
+    "folder": "porsche_919_hybrid",
+    "category": "Prototype",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Porsche 963 GTP",
+    "file": "Porsche 963 GTP.psd",
+    "folder": "porsche_963_gtp",
+    "category": "Prototype",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Porsche 992 Cup",
+    "file": "Porsche 992 Cup.psd",
+    "folder": "porsche_992_cup",
+    "category": "One-Make",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Porsche 992_2 Cup",
+    "file": "Porsche 992_2 Cup.psd",
+    "folder": "porsche_992_2_cup",
+    "category": "One-Make",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Porsche 992r GT3",
+    "file": "Porsche 992r GT3.psd",
+    "folder": "porsche_992r_gt3",
+    "category": "GT3",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Porsche Mission R",
+    "file": "Porsche Mission R.psd",
+    "folder": "porsche_mission_r",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Pro2 Stadium Truck",
+    "file": "Pro2 Stadium Truck.psd",
+    "folder": "pro2_stadium_truck",
+    "category": "Truck",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Pro4 Stadium Truck",
+    "file": "Pro4 Stadium Truck.psd",
+    "folder": "pro4_stadium_truck",
+    "category": "Truck",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Radical SR10",
+    "file": "Radical SR10.psd",
+    "folder": "radical_sr10",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Radical SR8",
+    "file": "Radical SR8.psd",
+    "folder": "radical_sr8",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ram 2026",
+    "file": "Ram 2026.psd",
+    "folder": "ram_2026",
+    "category": "Truck",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ray FF1600",
+    "file": "Ray FF1600.psd",
+    "folder": "ray_ff1600",
+    "category": "One-Make",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Renault Clio",
+    "file": "Renault Clio.psd",
+    "folder": "renault_clio",
+    "category": "Touring Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Riley Daytona Prototype",
+    "file": "Riley Daytona Prototype.psd",
+    "folder": "riley_daytona_prototype",
+    "category": "Prototype",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Ruf RT12R",
+    "file": "Ruf RT12R.psd",
+    "folder": "ruf_rt12r",
+    "category": "Sports Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Silvercrown",
+    "file": "Silvercrown.psd",
+    "folder": "silvercrown",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "SK Modified",
+    "file": "SK Modified.psd",
+    "folder": "sk_modified",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Spec Racer",
+    "file": "Spec Racer.psd",
+    "folder": "spec_racer",
+    "category": "One-Make",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Sprint Car",
+    "file": "Sprint Car.psd",
+    "folder": "sprint_car",
+    "category": "Dirt Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "SRX",
+    "file": "SRX.psd",
+    "folder": "srx",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Stock Car Pro Chevy Cruze",
+    "file": "Stock Car Pro Chevy Cruze.psd",
+    "folder": "stock_car_pro_chevy_cruze",
+    "category": "Touring Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Stock Car Pro Toyota Corolla",
+    "file": "Stock Car Pro Toyota Corolla.psd",
+    "folder": "stock_car_pro_toyota_corolla",
+    "category": "Touring Car",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Street Stock Casino",
+    "file": "Street Stock Casino.psd",
+    "folder": "street_stock_casino",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Street Stock Eagle",
+    "file": "Street Stock Eagle.psd",
+    "folder": "street_stock_eagle",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Street Stock",
+    "file": "Street Stock.psd",
+    "folder": "street_stock",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Subaru WRX STI",
+    "file": "Subaru WRX STI.psd",
+    "folder": "subaru_wrx_sti",
+    "category": "Rallycross",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Super Formula Lights SF23",
+    "file": "Super Formula Lights SF23.psd",
+    "folder": "super_formula_lights_sf23",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Super Formula SF23 Honda",
+    "file": "Super Formula SF23 Honda.psd",
+    "folder": "super_formula_sf23_honda",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Super Formula SF23 Toyota",
+    "file": "Super Formula SF23 Toyota.psd",
+    "folder": "super_formula_sf23_toyota",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Super Late Model",
+    "file": "Super Late Model.psd",
+    "folder": "super_late_model",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Supercars Chevy Camaro Gen 3",
+    "file": "Supercars Chevy Camaro Gen 3.psd",
+    "folder": "supercars_chevy_camaro_gen_3",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Supercars Ford Mustang Gen 3",
+    "file": "Supercars Ford Mustang Gen 3.psd",
+    "folder": "supercars_ford_mustang_gen_3",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Supercars Ford Mustang GT",
+    "file": "Supercars Ford Mustang GT.psd",
+    "folder": "supercars_ford_mustang_gt",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Supercars Holden ZB Commodore",
+    "file": "Supercars Holden ZB Commodore.psd",
+    "folder": "supercars_holden_zb_commodore",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Toyota Camry Class B",
+    "file": "Toyota Camry Class B.psd",
+    "folder": "toyota_camry_class_b",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Toyota Camry Gen 6",
+    "file": "Toyota Camry Gen 6.psd",
+    "folder": "toyota_camry_2015",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Toyota Camry Nextgen",
+    "file": "Toyota Camry Nextgen.psd",
+    "folder": "toyota_camry_nextgen",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Toyota GR86",
+    "file": "Toyota GR86.psd",
+    "folder": "toyota_gr86_cup",
+    "category": "Other",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Toyota Supra Class B",
+    "file": "Toyota Supra Class B.psd",
+    "folder": "toyota_supra_class_b",
+    "category": "NASCAR / Oval",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Toyota Tundra Truck 2015",
+    "file": "Toyota Tundra Truck 2015.psd",
+    "folder": "toyota_tundra_2015",
+    "category": "Truck",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "Toyota Tundra Truck 2022",
+    "file": "Toyota Tundra Truck 2022.psd",
+    "folder": "toyota_tundra_2022",
+    "category": "Truck",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "USF 2000 USF17",
+    "file": "USF 2000 USF17.psd",
+    "folder": "usf_2000_usf17",
+    "category": "Formula",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "VW Beetle GRC",
+    "file": "VW Beetle GRC.psd",
+    "folder": "vw_beetle_grc",
+    "category": "Rallycross",
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "name": "VW Jetta TDI",
+    "file": "VW Jetta TDI.psd",
+    "folder": "vw_jetta_tdi",
+    "category": "Touring Car",
+    "width": 2048,
+    "height": 2048
+  }
+]
