@@ -22,12 +22,12 @@ Deployment target is GitHub Pages.
 
 ## Working Rules
 
-1. Before starting meaningful work, read this file, [CHANGELOG.md](CHANGELOG.md), and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+1. Before starting meaningful work, read this file, [CHANGELOG.md](../CHANGELOG.md), and [docs/ARCHITECTURE.md](ARCHITECTURE.md).
 2. Mark backlog items accurately as work progresses.
 3. Record non-obvious architectural choices in the ADR section.
 4. Add a short session log entry for each meaningful work session.
-5. Update [CHANGELOG.md](CHANGELOG.md) for completed change sets.
-6. Before commit/push, bump the visible app version in [js/version.js](js/version.js) and keep it aligned with the intended release section in [CHANGELOG.md](CHANGELOG.md).
+5. Update [CHANGELOG.md](../CHANGELOG.md) for completed change sets.
+6. Before commit/push, bump the visible app version in [js/version.js](../js/version.js) and keep it aligned with the intended release section in [CHANGELOG.md](../CHANGELOG.md).
 7. Keep this document concise and current; remove stale planning notes instead of layering new ones on top.
 
 ---
@@ -38,7 +38,7 @@ Deployment target is GitHub Pages.
 |---|---|
 | Branding | Core app rebranded to Livery Lab |
 | Brand styling | Neon lime/yellow-on-black theme applied |
-| Header branding | Uses workspace `fullLogo.png` asset plus a visible version badge |
+| Header branding | Uses workspace `assets/brand/fullLogo.png` asset plus a visible version badge |
 | Car support | Bundled selector supports 164 PSD templates |
 | Car picker UX | Search-driven floating dropdown with category filter and recent cars |
 | Default startup behavior | Opens picker on blank canvas; no default template auto-load |
@@ -58,13 +58,13 @@ Deployment target is GitHub Pages.
 
 - Rebrand from GR86 Paint Studio to Livery Lab across the core UI and docs
 - Replace single-car startup flow with bundled multi-car support
-- Generate and use [templates/cars.json](templates/cars.json) as the static manifest
+- Generate and use [templates/cars.json](../templates/cars.json) as the static manifest
 - Generalize built-in template loading to take a manifest entry
 - Drive export folder hints from selected car metadata
 - Remove default GR86 template auto-loading on refresh
 - Replace startup list UI with a search dropdown
 - Prevent startup dropdown results from resizing the modal by anchoring it as a floating overlay
-- Replace the top-left inline SVG mark with [logo.png](logo.png)
+- Replace the top-left inline SVG mark with [logo.png](../assets/brand/logo.png)
 
 ### Known Good Behaviors
 
@@ -89,7 +89,7 @@ Status legend:
 
 - [✓] Car category filter in startup picker
   - Group or filter by GT3, GTP, NASCAR, Dirt, Formula, Touring, etc.
-  - Driven by a `category` field in [templates/cars.json](templates/cars.json)
+  - Driven by a `category` field in [templates/cars.json](../templates/cars.json)
 
 - [✓] Recently used cars
   - Persist last 5 selections in localStorage
@@ -115,7 +115,7 @@ Status legend:
   - Profile before optimizing; avoid speculative complexity
 
 - [ ] TGA decode guard for non-square inputs
-  - Verify current `lib/tga.js` behavior for non-2048 and non-square templates
+  - Verify current `js/vendor/tga.js` behavior for non-2048 and non-square templates
   - Add defensive handling if decode assumptions are wrong
 
 - [ ] `file://` startup behavior
@@ -123,7 +123,7 @@ Status legend:
   - Consider a clearer user-facing message when bundled template loading is unavailable locally
 
 - [ ] Architecture doc cleanup
-  - Remove stale Three.js/runtime references and older theme/startup-picker wording from [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+  - Remove stale Three.js/runtime references and older theme/startup-picker wording from [docs/ARCHITECTURE.md](ARCHITECTURE.md)
   - Keep docs aligned with the shipped 2D app and category-chip startup picker
 
 ### Future / Nice To Have
@@ -229,7 +229,7 @@ Context:
 Need to expose 150+ bundled cars in a static app without directory listing support.
 
 Decision:
-Use [templates/cars.json](templates/cars.json) as the source of truth for bundled car metadata.
+Use [templates/cars.json](../templates/cars.json) as the source of truth for bundled car metadata.
 
 Rationale:
 GitHub Pages cannot dynamically enumerate template files. A static manifest is cacheable, versioned, and easy to evolve.
@@ -295,7 +295,7 @@ Implemented.
 
 - No server: all features must work in a static deployment model
 - No build step: scripts load directly in browser order
-- Script load order matters: `lib/tga.js` → `js/export.js` → `js/editor.js` → `js/app.js`
+- Script load order matters: `js/vendor/tga.js` → `js/export.js` → `js/editor.js` → `js/app.js`
 - Bundled PSDs are large; lazy load only
 - iRacing export target is still a per-car folder + `car_XXXXXXXX.tga/png` naming workflow
 - Some browsers restrict `fetch()` for `file://` use, which can block bundled manifest/template loading
@@ -313,9 +313,9 @@ Implemented.
 
 ### Session: 2026-04-01 — Rebrand, multi-car support, picker refinement
 - Rebranded the app UI and styling to Livery Lab
-- Replaced the top-left inline mark with [logo.png](logo.png)
-- Generated [templates/cars.json](templates/cars.json) for 164 bundled templates
-- Added category metadata to [templates/cars.json](templates/cars.json) and a category filter to the startup picker
+- Replaced the top-left inline mark with [logo.png](../assets/brand/logo.png)
+- Generated [templates/cars.json](../templates/cars.json) for 164 bundled templates
+- Added category metadata to [templates/cars.json](../templates/cars.json) and a category filter to the startup picker
 - Implemented manifest-driven built-in template loading
 - Removed default GR86 template auto-loading on refresh
 - Updated export hints to follow the selected car
@@ -325,7 +325,7 @@ Implemented.
 - Refreshed README, architecture notes, changelog, and repo memory
 
 ### Session: 2026-04-01 — Plan audit and backlog pruning
-- Reviewed [PLAN.md](PLAN.md) item by item against the current repo and docs
+- Reviewed [docs/PLAN.md](PLAN.md) item by item against the current repo and docs
 - Removed the stale modal-specific keyboard shortcut backlog item because shortcuts are already surfaced in tooltips and README
 - Tightened undo/redo status wording to reflect the select-mode restoration fix
 - Collapsed vague documentation follow-ups into one explicit architecture-doc cleanup backlog item
@@ -342,13 +342,13 @@ Implemented.
 - Added `Brush toolkit expansion` to the Future / Nice To Have roadmap with slim acceptance criteria and a ranked position near other editor-capability upgrades
 
 ### Session: 2026-04-01 — Header branding and version source
-- Swapped the compact top-left mark/text treatment for the full-width [fullLogo.png](fullLogo.png) brand asset
-- Added a visible top-bar version badge sourced from [js/version.js](js/version.js)
+- Swapped the compact top-left mark/text treatment for the full-width [fullLogo.png](../assets/brand/fullLogo.png) brand asset
+- Added a visible top-bar version badge sourced from [js/version.js](../js/version.js)
 - Added a planning rule that version bumps and changelog release sections should stay aligned before commit/push
 
 ### Session: 2026-04-01 — Priority 1 picker completion
 - Added browser-local recent bundled cars to the startup picker and surfaced them ahead of general search results
-- Replaced the lossy Class B stock-car folder hints in [templates/cars.json](templates/cars.json) with clearer curated slugs so export messaging is less ambiguous
+- Replaced the lossy Class B stock-car folder hints in [templates/cars.json](../templates/cars.json) with clearer curated slugs so export messaging is less ambiguous
 - Marked the remaining Priority 1 picker/metadata backlog items as completed
 
 ### Session: 2026-03-31 — Initial audit and planning bootstrap
@@ -365,4 +365,4 @@ If work resumes immediately, start here:
 
 1. Revisit onboarding copy now that the picker supports category filters, recent cars, and curated export hints.
 2. Re-evaluate template opacity defaults and whether the app should remember the last-used template opacity.
-3. Clean up [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) so it matches the shipped 2D app and current picker/theme behavior.
+3. Clean up [docs/ARCHITECTURE.md](ARCHITECTURE.md) so it matches the shipped 2D app and current picker/theme behavior.

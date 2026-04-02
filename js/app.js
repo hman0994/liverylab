@@ -4,7 +4,7 @@
  * Wires together:
  *  - PaintEditor  (js/editor.js)
  *  - Export helpers (js/export.js)
- *  - TGA codec (lib/tga.js)
+ *  - TGA codec (js/vendor/tga.js)
  *  - All UI event listeners
  *
  * No build step needed — runs as a plain <script> after the libraries load.

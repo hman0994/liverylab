@@ -2,7 +2,7 @@
  * export.js — PNG and TGA download helpers for Livery Lab
  *
  * Relies on:
- *  - TGA.encode()  from lib/tga.js
+ *  - TGA.encode()  from js/vendor/tga.js
  *  - editor.getExportImageData(size) from js/editor.js
  */
 

@@ -9,7 +9,7 @@
 
 - **No build step.** All files served as-is (GitHub Pages / `file://`).
 - **Script load order** (bottom of `index.html`):
-  1. `lib/tga.js`      → exposes `TGA` global
+   1. `js/vendor/tga.js` → exposes `TGA` global
   2. `js/export.js`    → exposes `exportPNG`, `exportTGA`, `showToast`, `triggerDownload`
   3. `js/editor.js`    → exposes `PaintEditor` class
    4. `js/version.js`   → exposes `window.LIVERY_LAB_VERSION` for the visible top-bar version badge
@@ -67,7 +67,7 @@ Single stylesheet. Dark theme. Key CSS custom properties:
 No CSS preprocessor. All selectors are flat.
 
 Recent header updates:
-- `.logo img` now renders the full-width `fullLogo.png` asset instead of the compact mark + text treatment
+- `.logo img` now renders the full-width `assets/brand/fullLogo.png` asset instead of the compact mark + text treatment
 - `.app-version` styles the visible version badge shown beside the current car label
 
 Recent additions:
@@ -185,7 +185,7 @@ Types: `''` (grey) · `'success'` (green) · `'error'` (red).
 
 ---
 
-### `lib/tga.js`
+### `js/vendor/tga.js`
 
 Standalone TGA codec. Exposes `window.TGA` with:
 - `TGA.decode(arrayBuffer)` → data URL string

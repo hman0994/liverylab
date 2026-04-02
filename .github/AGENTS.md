@@ -1,4 +1,4 @@
-# AGENTS.md — racecarPainter
+# AGENTS.md — Livery Lab
 
 This repository uses GitHub Copilot agent customization 1.0 patterns.
 

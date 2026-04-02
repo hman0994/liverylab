@@ -1,22 +1,23 @@
-# GitHub Copilot Workspace Instructions: racecarPainter
+# GitHub Copilot Workspace Instructions: Livery Lab
 
 ## Project summary
-- **Name:** GR86 Paint Studio (racecarPainter)
+- **Name:** Livery Lab
 - **Type:** Static, client-side web app (no backend, no build system)
-- **Stack:** HTML/CSS/Vanilla JS, Fabric.js, Three.js, TGA helper in `lib/tga.js`
+- **Stack:** HTML/CSS/Vanilla JS, Fabric.js, Three.js, TGA helper in `js/vendor/tga.js`
 - **Primary runtime:** `index.html` with modules under `js/` and styles in `css/style.css`
-- **Goal:** Browser-based livery painter for iRacing Toyota GR86 Cup cars (PNG/TGA export + template overlay)
+- **Goal:** Browser-based livery painter for iRacing car templates with PNG/TGA export, layers, and bundled multi-car support.
 
 ## Important files
 - `index.html` (UI markup, controls, modals)
 - `js/app.js` (contexts, event wiring, tool mode switching)
 - `js/editor.js` (canvas layer/data model, tools, undo/redo, patterns, JSON save/load)
 - `js/export.js` (export PNG/TGA, download, reports/toast)
-- `lib/tga.js` (TGA decode/encode for iRacing templates)
+- `js/vendor/tga.js` (TGA decode/encode for iRacing templates)
+- `assets/brand/fullLogo.png`, `assets/brand/logo.png` (header branding and favicon assets)
 - `css/style.css` (layout, theme, responsive rules)
 - `docs/ARCHITECTURE.md` (core behavior and design assumptions)
 - `README.md` (user instructions and deploy path via GitHub Pages)
-- `PLAN.md` (roadmap/feature ideas)
+- `docs/PLAN.md` (roadmap/feature ideas)
 - `CHANGELOG.md` (release notes and audit trail for changes)
 - `.github/copilot-instructions.md` (primary workspace agent runtime guidance)
 - `.github/AGENTS.md` (agent configuration and entry points, if present)

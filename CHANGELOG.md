@@ -16,6 +16,17 @@ Versioning notes:
 
 ---
 
+## [2026-04-02] v0.1.1 — Repo Layout And Release Metadata Cleanup
+
+### Changed
+- `docs/PLAN.md`, `js/vendor/tga.js`, `assets/brand/fullLogo.png`, `assets/brand/logo.png`, `index.html`, `README.md`, `docs/ARCHITECTURE.md`, `js/app.js`, `js/export.js` — reorganized the repo layout by moving planning, vendor, and brand assets into clearer folders and updated all runtime and documentation paths to match.
+- `README.md`, `index.html`, `js/version.js`, `.github/copilot-instructions.md`, `.github/AGENTS.md`, `CHANGELOG.md` — aligned the public and internal release metadata on `v0.1.1`, refreshed the landing-page copy, and removed lingering old project naming from workspace metadata.
+
+### Notes
+- This release is a maintenance pass focused on repository organization, path consistency, and release/version alignment rather than new editor features.
+
+---
+
 ## [2026-04-01] v0.1.0 — Initial Public Baseline
 
 **First branded public baseline for Livery Lab.**
@@ -25,12 +36,12 @@ Versioning notes:
 - `templates/cars.json` — added a static manifest for the bundled car library, including category metadata, folder hints, and default dimensions.
 
 ### Changed
-- `index.html`, `css/style.css`, `fullLogo.png`, `js/version.js`, `js/app.js` — switched the top-left header branding to `fullLogo.png` and added a visible `v0.1.0` app-version badge.
-- `index.html`, `js/export.js`, `js/editor.js`, `README.md`, `PLAN.md` — aligned export behavior and documentation around the supported 1024 and 2048 iRacing export sizes.
+- `index.html`, `css/style.css`, `assets/brand/fullLogo.png`, `js/version.js`, `js/app.js` — switched the top-left header branding to `assets/brand/fullLogo.png` and added a visible `v0.1.0` app-version badge.
+- `index.html`, `js/export.js`, `js/editor.js`, `README.md`, `docs/PLAN.md` — aligned export behavior and documentation around the supported 1024 and 2048 iRacing export sizes.
 - `js/app.js`, `css/style.css`, `README.md` — shipped a search-driven startup picker with category filters and browser-local recent bundled cars.
 - `templates/cars.json`, `js/app.js`, `README.md` — added curated export-folder hints, including clearer Class B stock-car variants.
 - `js/editor.js`, `docs/ARCHITECTURE.md` — stabilized undo/redo so layer metadata and selected-object identity survive history navigation.
-- `README.md`, `PLAN.md`, `docs/ARCHITECTURE.md`, `CHANGELOG.md` — refreshed the docs and planning artifacts to match the current shipped app and version workflow.
+- `README.md`, `docs/PLAN.md`, `docs/ARCHITECTURE.md`, `CHANGELOG.md` — refreshed the docs and planning artifacts to match the current shipped app and version workflow.
 
 ### Notes
 - This resets the public-facing version story to a clean `0.1.0` baseline while preserving the current product state.
