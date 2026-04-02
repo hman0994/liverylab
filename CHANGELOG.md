@@ -14,6 +14,24 @@ Versioning notes:
 
 ## [Unreleased]
 
+### Fixed
+- `js/editor.js` — `_syncObjectInteractivity` now truly locks interactivity to only the
+  target object when one is provided; previously all valid objects remained selectable in
+  select mode, allowing higher-stacked layers (decals, mask) to intercept clicks intended
+  for the selected layer (issues #1, #4).
+- `js/editor.js` — `_onSelection(null)` now calls `_syncObjectInteractivity(null)` when
+  selection is cleared in select mode, restoring all-objects interactivity so the user can
+  click to re-select any visible layer (issue #3).
+- `js/editor.js` — `_restoreToolStateAfterHistoryLoad` no longer uses a stale
+  `fallbackInteractiveObject`; if no object was selected before undo/redo, all valid layers
+  become selectable instead of locking to an arbitrary fallback.
+- `js/editor.js` — Added `perPixelTargetFind: true` to PSD-loaded image layers and
+  user-uploaded images so that clicks on fully-transparent pixels fall through to the layer
+  below instead of being absorbed by the bounding box of an overlapping layer (issues #1, #2, #4).
+- `js/editor.js` — `perPixelTargetFind` is now included in `_historyStateProperties` and
+  preserved in `_replaceLayerWithImage` `oldProps`, so the setting survives undo/redo,
+  paint merges, and JSON project save/load.
+
 ---
 
 ## [2026-04-02] v0.1.2 — Selection And Object Editing Stability
