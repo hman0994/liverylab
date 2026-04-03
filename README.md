@@ -99,6 +99,9 @@ Sizes: `1024x1024`, `2048x2048`
 
 - [CHANGELOG.md](CHANGELOG.md) for release history
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for internals and editor behavior
+- [docs/QA/README.md](docs/QA/README.md) for tester instructions, QA document layout, and where to start
+- [docs/QA/QA-TEST-PLAN.md](docs/QA/QA-TEST-PLAN.md) for the team QA process and signoff criteria
+- [docs/QA/MANUAL-TEST-CHECKLIST.md](docs/QA/MANUAL-TEST-CHECKLIST.md) for step-by-step manual regression coverage
 
 ## License
 

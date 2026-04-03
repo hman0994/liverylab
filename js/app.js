@@ -12,6 +12,26 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
   const appVersion = window.LIVERY_LAB_VERSION || { display: 'v0.0.0-dev', semver: '0.0.0-dev', channel: 'development' };
+  const dispatcher = window.LiveryLabDispatcher.createDispatcher();
+  const appStore = window.LiveryLabAppStore.createAppStore({ exportSize: 2048 });
+  const shellSelectors = window.LiveryLabAppStore.selectors;
+  window.LiveryLabAppStore.registerHandlers(dispatcher, appStore);
+  const RECENT_CARS_STORAGE_KEY = 'liverylab.recentCars';
+  const MAX_RECENT_CARS = 5;
+
+  function loadRecentCarFiles() {
+    try {
+      const raw = window.localStorage.getItem(RECENT_CARS_STORAGE_KEY);
+      if (!raw) return [];
+
+      const recentFiles = JSON.parse(raw);
+      return Array.isArray(recentFiles)
+        ? recentFiles.filter((file) => typeof file === 'string').slice(0, MAX_RECENT_CARS)
+        : [];
+    } catch {
+      return [];
+    }
+  }
 
   function syncVersionBadge() {
     const versionBadge = document.getElementById('app-version-badge');
@@ -29,23 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const editor  = new PaintEditor('paint-canvas');
   let availableCars = [];
   let selectedCar = null;
-  const RECENT_CARS_STORAGE_KEY = 'liverylab.recentCars';
-  const MAX_RECENT_CARS = 5;
   let recentCarFiles = loadRecentCarFiles();
-
-  function loadRecentCarFiles() {
-    try {
-      const raw = window.localStorage.getItem(RECENT_CARS_STORAGE_KEY);
-      if (!raw) return [];
-
-      const recentFiles = JSON.parse(raw);
-      return Array.isArray(recentFiles)
-        ? recentFiles.filter((file) => typeof file === 'string').slice(0, MAX_RECENT_CARS)
-        : [];
-    } catch {
-      return [];
-    }
-  }
 
   function saveRecentCarFiles() {
     try {
@@ -100,6 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function setSelectedCar(car) {
     selectedCar = car ? { ...car } : null;
+    editor.setDocumentCar(selectedCar);
     updateCarLabel(selectedCar);
   }
 
@@ -458,7 +463,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function setActiveTool(toolName) {
     editor.setTool(toolName);
-    syncToolUI(toolName);
+  }
+
+  function readWorkspaceState() {
+    if (typeof editor.getWorkspaceState === 'function') {
+      return editor.getWorkspaceState();
+    }
+
+    return {
+      tool: {
+        active: editor.currentTool,
+      },
+      layers: typeof editor.getLayers === 'function' ? editor.getLayers() : [],
+    };
   }
 
   function syncToolUI(toolName) {
@@ -466,11 +483,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     toolButtons.forEach(b => b.classList.toggle('active', b.dataset.tool === toolName));
 
     // Show/hide context-sensitive properties
-    updatePropertiesPanel(toolName);
+    updatePropertiesPanel(toolName, editor.getActiveObject?.() || null);
+  }
+
+  function renderWorkspaceState(workspaceState = readWorkspaceState()) {
+    syncToolUI(workspaceState?.tool?.active || 'select');
+    renderLayersPanel(workspaceState);
   }
 
   // Keep UI in sync when editor internally switches tool (e.g. after placing a shape)
-  editor.onToolChanged = syncToolUI;
+  editor.onToolChanged = () => renderWorkspaceState();
+  editor.onDocumentLoaded = ({ document: loadedDocument }) => {
+    setSelectedCar(loadedDocument.car || null);
+    syncZoomSlider();
+    renderCarList(carSearchInput?.value || '');
+    renderWorkspaceState();
+  };
 
   /* ══════════════════════════════════════════════════════════
      4.  Properties panel — colour, size, opacity, stroke
@@ -490,6 +518,209 @@ document.addEventListener('DOMContentLoaded', async () => {
   const tmplOpacityVal      = document.getElementById('tmpl-opacity-val');
   const bgColorInput        = document.getElementById('prop-bg-color');
 
+  const fontPickerCatalog = [
+    {
+      label: 'Sans Serif',
+      genericFamily: 'sans-serif',
+      fonts: [
+        'Aptos',
+        'Arial',
+        'Bahnschrift',
+        'Calibri',
+        'Candara',
+        'Century Gothic',
+        'Corbel',
+        'Franklin Gothic Medium',
+        'Gadugi',
+        'Gill Sans MT',
+        'Leelawadee UI',
+        'Lucida Sans Unicode',
+        'Microsoft Sans Serif',
+        'Segoe UI',
+        'Tahoma',
+        'Trebuchet MS',
+        'Verdana',
+        'Yu Gothic',
+        'Yu Gothic UI'
+      ]
+    },
+    {
+      label: 'Serif',
+      genericFamily: 'serif',
+      fonts: [
+        'Aptos Serif',
+        'Baskerville Old Face',
+        'Book Antiqua',
+        'Bookman Old Style',
+        'Cambria',
+        'Constantia',
+        'Garamond',
+        'Georgia',
+        'Palatino Linotype',
+        'Perpetua',
+        'Rockwell',
+        'Sitka Text',
+        'Sylfaen',
+        'Times New Roman',
+        'Yu Mincho'
+      ]
+    },
+    {
+      label: 'Monospace',
+      genericFamily: 'monospace',
+      fonts: [
+        'Aptos Mono',
+        'Cascadia Code',
+        'Cascadia Mono',
+        'Consolas',
+        'Courier New',
+        'Lucida Console'
+      ]
+    },
+    {
+      label: 'Script / Handwriting',
+      genericFamily: 'cursive',
+      fonts: [
+        'Bradley Hand ITC',
+        'Brush Script MT',
+        'Comic Sans MS',
+        'Gabriola',
+        'Ink Free',
+        'Lucida Handwriting',
+        'MV Boli',
+        'Segoe Print',
+        'Segoe Script',
+        'Tempus Sans ITC'
+      ]
+    },
+    {
+      label: 'Display',
+      genericFamily: 'sans-serif',
+      fonts: [
+        'Arial Black',
+        'Cooper Black',
+        'Haettenschweiler',
+        'Impact',
+        'Jokerman',
+        'Showcard Gothic'
+      ]
+    }
+  ];
+  const fontDetectionSample = 'mmmmmmmmmwwwwwwwiiiiiii1111111';
+  const fontFallbackFamilies = ['monospace', 'serif', 'sans-serif'];
+  let fontMeasureContext = null;
+
+  function toCssFontFamily(fontFamily) {
+    const normalizedFontFamily = String(fontFamily || '').trim().replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    if (!normalizedFontFamily) return 'sans-serif';
+    return /[\s,]/.test(normalizedFontFamily)
+      ? `"${normalizedFontFamily}"`
+      : normalizedFontFamily;
+  }
+
+  function buildFontPreviewStack(fontFamily, genericFamily = 'sans-serif') {
+    return `${toCssFontFamily(fontFamily)}, ${genericFamily}`;
+  }
+
+  function getFontMeasureContext() {
+    if (fontMeasureContext) return fontMeasureContext;
+
+    const canvas = document.createElement('canvas');
+    fontMeasureContext = canvas.getContext('2d');
+    return fontMeasureContext;
+  }
+
+  function isFontAvailable(fontFamily) {
+    if (typeof fontFamily !== 'string' || !fontFamily.trim()) return false;
+
+    const measureContext = getFontMeasureContext();
+    if (!measureContext) return true;
+
+    return fontFallbackFamilies.some((fallbackFamily) => {
+      measureContext.font = `72px ${fallbackFamily}`;
+      const baselineWidth = measureContext.measureText(fontDetectionSample).width;
+
+      measureContext.font = `72px ${buildFontPreviewStack(fontFamily, fallbackFamily)}`;
+      const candidateWidth = measureContext.measureText(fontDetectionSample).width;
+
+      return candidateWidth !== baselineWidth;
+    });
+  }
+
+  function createFontOption(fontFamily, genericFamily = 'sans-serif') {
+    const option = document.createElement('option');
+    option.value = fontFamily;
+    option.textContent = fontFamily;
+    option.style.fontFamily = buildFontPreviewStack(fontFamily, genericFamily);
+    return option;
+  }
+
+  function findFontGroup(label) {
+    return Array.from(fontFamilySelect?.children || []).find((child) => child.tagName === 'OPTGROUP' && child.label === label) || null;
+  }
+
+  function ensureFontGroup(label) {
+    let group = findFontGroup(label);
+    if (group || !fontFamilySelect) return group;
+
+    group = document.createElement('optgroup');
+    group.label = label;
+    fontFamilySelect.appendChild(group);
+    return group;
+  }
+
+  function ensureFontPickerOption(fontFamily, groupLabel = 'Document Fonts', genericFamily = 'sans-serif') {
+    if (!fontFamilySelect || typeof fontFamily !== 'string' || !fontFamily.trim()) return null;
+
+    const normalizedFontFamily = fontFamily.trim();
+    const existingOption = Array.from(fontFamilySelect.options).find((option) => option.value === normalizedFontFamily);
+    if (existingOption) return existingOption;
+
+    const group = ensureFontGroup(groupLabel);
+    if (!group) return null;
+
+    const option = createFontOption(normalizedFontFamily, genericFamily);
+    group.appendChild(option);
+    return option;
+  }
+
+  function populateSupportedFontOptions(selectedFontFamily = 'Arial') {
+    if (!fontFamilySelect) return;
+
+    fontFamilySelect.innerHTML = '';
+
+    let renderedFontCount = 0;
+    fontPickerCatalog.forEach((groupDefinition) => {
+      const supportedFonts = groupDefinition.fonts.filter(isFontAvailable);
+      if (!supportedFonts.length) return;
+
+      const group = document.createElement('optgroup');
+      group.label = groupDefinition.label;
+      supportedFonts.forEach((fontFamily) => {
+        group.appendChild(createFontOption(fontFamily, groupDefinition.genericFamily));
+        renderedFontCount += 1;
+      });
+      fontFamilySelect.appendChild(group);
+    });
+
+    if (!renderedFontCount) {
+      ensureFontPickerOption('Arial', 'Sans Serif', 'sans-serif');
+    }
+
+    const preferredFontFamily = typeof selectedFontFamily === 'string' && selectedFontFamily.trim()
+      ? selectedFontFamily.trim()
+      : (fontFamilySelect.options[0]?.value || 'Arial');
+
+    ensureFontPickerOption(preferredFontFamily);
+    fontFamilySelect.value = preferredFontFamily;
+  }
+
+  function syncFontFamilyPreview(fontFamily) {
+    if (!fontFamilySelect || typeof fontFamily !== 'string' || !fontFamily) return;
+    ensureFontPickerOption(fontFamily);
+    fontFamilySelect.style.fontFamily = buildFontPreviewStack(fontFamily, 'sans-serif');
+  }
+
   primaryColorInput?.addEventListener('input', e => {
     editor.setPrimaryColor(e.target.value);
     editor.updateActiveColor(e.target.value);
@@ -498,6 +729,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const secondaryColorInput = document.getElementById('prop-secondary-color');
   secondaryColorInput?.addEventListener('input', e => {
     editor.setSecondaryColor(e.target.value);
+    editor.updateActiveSecondaryColor(e.target.value);
   });
 
 
@@ -518,10 +750,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     editor.setLayerOpacity(v);
     if (layerOpacityVal) layerOpacityVal.textContent = Math.round(v * 100) + '%';
   });
+  layerOpacityInput?.addEventListener('change', () => editor.commitLayerOpacityChange());
+  layerOpacityInput?.addEventListener('blur', () => editor.commitLayerOpacityChange());
 
   // Sync layer opacity slider when a layer is selected
   editor.onSelectionChanged = (obj) => {
-    renderLayersPanel();
+    renderLayersPanel(readWorkspaceState());
+    updatePropertiesPanel(editor.currentTool, obj || null);
     updatePropertiesFromObject(obj);
     if (layerOpacityInput && obj && !obj._isGuide && !obj._isSpecMap) {
       const op = obj.opacity !== undefined ? obj.opacity : 1;
@@ -536,8 +771,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (strokeWidthVal) strokeWidthVal.textContent = v;
   });
 
-  fontFamilySelect?.addEventListener('change', e => editor.setFont(e.target.value));
+  fontFamilySelect?.addEventListener('change', e => {
+    editor.setFont(e.target.value);
+    syncFontFamilyPreview(e.target.value);
+  });
   fontSizeInput?.addEventListener('change', e => editor.setFontSize(parseInt(e.target.value)));
+
+  if (fontFamilySelect) {
+    populateSupportedFontOptions(editor.currentFont || fontFamilySelect.value || 'Arial');
+    syncFontFamilyPreview(fontFamilySelect.value);
+  }
 
   tmplOpacityInput?.addEventListener('input', e => {
     const v = parseFloat(e.target.value);
@@ -578,8 +821,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
     if (document.activeElement?.isContentEditable) return;
 
-    if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); editor.undo(); return; }
-    if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) { e.preventDefault(); editor.redo(); return; }
+    const key = String(e.key || '').toLowerCase();
+
+    if ((e.ctrlKey || e.metaKey) && key === 'z') { e.preventDefault(); editor.undo(); return; }
+    if ((e.ctrlKey || e.metaKey) && (key === 'y' || (e.shiftKey && key === 'z'))) { e.preventDefault(); editor.redo(); return; }
     if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); editor.deleteSelected(); return; }
 
     const nudgeMap = {
@@ -600,8 +845,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Tool shortcuts
     const toolMap = { v: 'select', b: 'brush', e: 'eraser', f: 'fill',
                       r: 'rect',   c: 'circle', t: 'text',  l: 'line', g: 'gradient' };
-    if (!e.ctrlKey && !e.metaKey && !e.altKey && toolMap[e.key]) {
-      setActiveTool(toolMap[e.key]);
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && toolMap[key]) {
+      e.preventDefault();
+      setActiveTool(toolMap[key]);
     }
   });
 
@@ -647,14 +893,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* ══════════════════════════════════════════════════════════
      8.  Layers panel
      ══════════════════════════════════════════════════════════ */
-  editor.onLayersChanged = renderLayersPanel;
+  editor.onLayersChanged = () => renderLayersPanel(readWorkspaceState());
   // onSelectionChanged is set up alongside the layer-opacity slider wiring above
 
-  function renderLayersPanel() {
+  function renderLayersPanel(workspaceState = readWorkspaceState()) {
     const list = document.getElementById('layers-list');
     if (!list) return;
 
-    const layers = editor.getLayers();
+    const layers = Array.isArray(workspaceState?.layers) ? workspaceState.layers : [];
     list.innerHTML = '';
 
     let currentGroup = null;
@@ -767,52 +1013,125 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* ══════════════════════════════════════════════════════════
      9.  Properties panel — show context-sensitive controls
      ══════════════════════════════════════════════════════════ */
-  function updatePropertiesPanel(toolName) {
+  function getSelectedObjectToolContext(obj) {
+    if (!obj) return null;
+    const hasGradientFill = !!obj.fill && typeof obj.fill === 'object' && Array.isArray(obj.fill.colorStops);
+    if (obj.type === 'i-text' || obj.type === 'text') return 'text';
+    if (obj.type === 'line') return 'line';
+    if ((obj.type === 'rect' || obj.type === 'image') && hasGradientFill) return 'gradient';
+    if (obj.type === 'rect') return 'rect';
+    if (obj.type === 'ellipse' || obj.type === 'circle') return 'circle';
+    return null;
+  }
+
+  function updatePropertiesPanel(toolName, selectedObject = null) {
+    const effectiveTool = toolName === 'select'
+      ? (getSelectedObjectToolContext(selectedObject) || toolName)
+      : toolName;
+
     document.querySelectorAll('.props-group').forEach(g => {
       const tools = g.dataset.tools ? g.dataset.tools.split(',') : [];
-      g.classList.toggle('hidden', tools.length > 0 && !tools.includes(toolName));
+      g.classList.toggle('hidden', tools.length > 0 && !tools.includes(effectiveTool));
     });
   }
 
   function updatePropertiesFromObject(obj) {
     if (!obj) return;
-    // Sync colour picker to selected object's fill
-    const fill = obj.fill || obj.stroke;
-    if (typeof fill === 'string' && fill.startsWith('#') && primaryColorInput) {
-      primaryColorInput.value = fill;
-      editor.setPrimaryColor(fill);
+    const primaryColor = typeof obj._primaryColor === 'string'
+      ? obj._primaryColor
+      : (typeof obj.fill === 'string' && obj.fill.startsWith('#')
+          ? obj.fill
+          : (typeof obj.stroke === 'string' && obj.stroke.startsWith('#') ? obj.stroke : null));
+
+    if (primaryColor && primaryColorInput) {
+      primaryColorInput.value = primaryColor;
+      editor.setPrimaryColor(primaryColor);
     }
+
     if (obj.opacity !== undefined && opacityInput) {
       opacityInput.value = obj.opacity;
       if (opacityVal) opacityVal.textContent = Math.round(obj.opacity * 100) + '%';
+    }
+
+    const secondaryColor = typeof obj._secondaryColor === 'string'
+      ? obj._secondaryColor
+      : (typeof obj.stroke === 'string' && obj.stroke.startsWith('#') ? obj.stroke : null);
+
+    if (secondaryColorInput && secondaryColor) {
+      secondaryColorInput.value = secondaryColor;
+      editor.setSecondaryColor(secondaryColor);
+    }
+
+    if ((obj.type === 'i-text' || obj.type === 'text') && fontFamilySelect && fontSizeInput) {
+      if (typeof obj.fontFamily === 'string') {
+        ensureFontPickerOption(obj.fontFamily);
+        fontFamilySelect.value = obj.fontFamily;
+        editor.setFont(obj.fontFamily);
+        syncFontFamilyPreview(obj.fontFamily);
+      }
+      if (Number.isFinite(Number(obj.fontSize))) {
+        fontSizeInput.value = String(obj.fontSize);
+        editor.setFontSize(Number(obj.fontSize));
+      }
     }
   }
 
   /* ══════════════════════════════════════════════════════════
      10. Export modal
      ══════════════════════════════════════════════════════════ */
-  let selectedExportSize = 2048;
-
   const exportModal = document.getElementById('export-modal');
-  document.getElementById('btn-open-export')?.addEventListener('click', () => openModal(exportModal));
-  document.getElementById('btn-close-export')?.addEventListener('click', () => closeModal(exportModal));
+  const exportSizeButtons = Array.from(document.querySelectorAll('.export-size-btn'));
 
-  document.querySelectorAll('.export-size-btn').forEach(btn => {
+  function renderExportShell(state) {
+    const exportSize = shellSelectors.selectExportSize(state);
+    const isExportModalOpen = shellSelectors.isModalOpen(state, 'export');
+
+    exportModal?.classList.toggle('hidden', !isExportModalOpen);
+    exportSizeButtons.forEach((button) => {
+      const buttonSize = Number.parseInt(button.dataset.size, 10);
+      button.classList.toggle('selected', buttonSize === exportSize);
+    });
+  }
+
+  appStore.subscribe((state) => {
+    renderExportShell(state);
+  });
+
+  dispatcher.register('app.export.request', async ({ payload }) => {
+    await dispatcher.dispatch('app.modal.close', { modal: 'export' });
+
+    const exportSize = shellSelectors.selectExportSize(appStore.getState());
+    const exportFolder = selectedCar?.folder;
+
+    if (payload?.format === 'png') {
+      await exportPNG(editor, exportSize, exportFolder);
+      return;
+    }
+
+    if (payload?.format === 'tga') {
+      await exportTGA(editor, exportSize, exportFolder);
+    }
+  });
+
+  document.getElementById('btn-open-export')?.addEventListener('click', () => {
+    dispatcher.dispatch('app.modal.open', { modal: 'export' });
+  });
+  document.getElementById('btn-close-export')?.addEventListener('click', () => {
+    dispatcher.dispatch('app.modal.close', { modal: 'export' });
+  });
+
+  exportSizeButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.export-size-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      selectedExportSize = parseInt(btn.dataset.size);
+      dispatcher.dispatch('app.export.size.set', { size: btn.dataset.size });
     });
   });
 
   document.getElementById('btn-do-export-png')?.addEventListener('click', async () => {
-    closeModal(exportModal);
-    await exportPNG(editor, selectedExportSize, selectedCar?.folder);
+    await dispatcher.dispatch('app.export.request', { format: 'png' });
   });
 
   document.getElementById('btn-do-export-tga')?.addEventListener('click', async () => {
-    closeModal(exportModal);
-    await exportTGA(editor, selectedExportSize, selectedCar?.folder);
+    await dispatcher.dispatch('app.export.request', { format: 'tga' });
   });
 
   /* ══════════════════════════════════════════════════════════
@@ -849,7 +1168,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Close any modal on backdrop click
   document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
     backdrop.addEventListener('click', (e) => {
-      if (e.target === backdrop) closeModal(backdrop);
+      if (e.target !== backdrop) return;
+
+      if (backdrop === exportModal) {
+        dispatcher.dispatch('app.modal.close', { modal: 'export' });
+        return;
+      }
+
+      closeModal(backdrop);
     });
   });
 
@@ -867,9 +1193,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   setActiveTool('select');
   syncVersionBadge();
   updateCarLabel(null);
+  renderExportShell(appStore.getState());
 
   // Draw initial layers panel
-  renderLayersPanel();
+  renderWorkspaceState();
 
   availableCars = await loadCarManifest();
   syncRecentCarsWithManifest();

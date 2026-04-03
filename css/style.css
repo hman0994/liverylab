@@ -360,6 +360,14 @@ select {
 }
 select:focus { outline: 1px solid var(--accent); }
 
+#prop-font {
+  font-size: 14px;
+}
+
+#prop-font option {
+  font-size: 15px;
+}
+
 /* Number input */
 input[type="number"] {
   background: var(--panel);

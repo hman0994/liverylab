@@ -18,6 +18,13 @@ Deployment target is GitHub Pages.
 - Preserve a simple static-hosting model with direct file editing and no toolchain
 - Keep export flow compatible with iRacing PNG/TGA expectations
 
+### Related Planning Docs
+
+- [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) defines the longer-range architecture modernization path.
+- [parallel-workstreams/README.md](parallel-workstreams/README.md) breaks that modernization plan into agent-owned parallel workstreams.
+- [parallel-workstreams/PROMPTS.md](parallel-workstreams/PROMPTS.md) contains the kickoff prompts for each assigned workstream agent.
+- This file remains the current-state roadmap, backlog, and decision log for day-to-day repo work.
+
 ---
 
 ## Working Rules
@@ -122,9 +129,9 @@ Status legend:
   - Built-in manifest/template fetch still depends on browser fetch rules
   - Consider a clearer user-facing message when bundled template loading is unavailable locally
 
-- [ ] Architecture doc cleanup
+- [✓] Architecture doc cleanup
   - Remove stale Three.js/runtime references and older theme/startup-picker wording from [docs/ARCHITECTURE.md](ARCHITECTURE.md)
-  - Keep docs aligned with the shipped 2D app and category-chip startup picker
+  - Added the first migration contract baseline so downstream agents have a shared boundary map, state-ownership matrix, naming rules, and overlap zones
 
 ### Future / Nice To Have
 
@@ -289,6 +296,32 @@ Reduces visual noise, scales better to the car count, and keeps the modal shell 
 Status:
 Implemented.
 
+### ADR-006 — Core, UI, and adapter seams are the migration boundary (2026-04-02)
+Context:
+The current runtime is still concentrated in `js/app.js`, `js/editor.js`, and `js/export.js`, but parallel migration work needs a stable target structure before code extraction starts.
+
+Decision:
+Treat `js/core/**` as the future home for state, commands, history, render contracts, and tool contracts; treat `js/ui/**` as the future home for DOM/event wiring; isolate Fabric, file IO, storage, manifest fetches, and codec integrations behind adapters.
+
+Rationale:
+This lets downstream agents extract code toward one consistent architecture instead of inventing incompatible seams in parallel.
+
+Status:
+Active migration contract.
+
+### ADR-007 — Persisted document state excludes transient tool and UI state (2026-04-02)
+Context:
+The first `EditorDocument` schema needs clear ownership boundaries so persistence, history, and export work do not become coupled to temporary UI or pointer state.
+
+Decision:
+Serialize durable document data such as layers, template/car metadata, guides, and export profile. Keep transient tool previews, hover state, modal state, picker filters, and similar UI concerns out of the persisted document contract.
+
+Rationale:
+This keeps project files stable, reduces migration risk, and avoids forcing history/render systems to model ephemeral browser interactions as durable data.
+
+Status:
+Active migration contract.
+
 ---
 
 ## Known Constraints
@@ -310,6 +343,84 @@ Implemented.
 ---
 
 ## Session Log
+
+### Session: 2026-04-03 - Release metadata aligned for the QA-closed stabilization slice
+- Moved the completed `Unreleased` work into [../CHANGELOG.md](../CHANGELOG.md) as `v0.1.3` so the Slice1 QA closure and the first migration baseline now have a clean release boundary before the next cutover slice
+- Updated [../js/version.js](../js/version.js) so the visible app version now matches the new `v0.1.3` release section
+
+### Session: 2026-04-03 - Layer opacity undo now collapses to one step
+- Updated [../js/editor.js](../js/editor.js) and [../js/app.js](../js/app.js) so layer-opacity slider changes now stay live during the drag but commit as one history transaction when the adjustment finishes instead of requiring many undo steps
+- Updated [QA/MANUAL-TEST-CHECKLIST.md](QA/MANUAL-TEST-CHECKLIST.md) and [QA/QA-TEST-PLAN.md](QA/QA-TEST-PLAN.md) so QA explicitly checks single-step undo behavior for layer-opacity changes
+
+### Session: 2026-04-03 - Fill now targets the selected object instead of creating a new layer
+- Updated [../js/editor.js](../js/editor.js) and [../js/app.js](../js/app.js) so fill mode now retains the selected target, applies solid fill directly to selected fill-capable objects when clicked inside them, and keeps the filled object selected afterward instead of falling through to a new layer
+- Updated [QA/MANUAL-TEST-CHECKLIST.md](QA/MANUAL-TEST-CHECKLIST.md) and [QA/QA-TEST-PLAN.md](QA/QA-TEST-PLAN.md) so QA explicitly checks selected-object fill behavior alongside active-layer fill
+
+### Session: 2026-04-03 - Font picker improved for text-tool usability
+- Updated [../index.html](../index.html), [../css/style.css](../css/style.css), and [../js/app.js](../js/app.js) so the text-tool font picker now builds itself from a larger Windows-oriented catalog, filters that list down to fonts the browser can actually use, preserves imported document fonts in the picker, previews each option in its own face where supported, removes the international/UI group, and uses larger dropdown text for easier scanning
+- This addresses the remaining text-tool usability request from QA without introducing any build step or external dependency
+
+### Session: 2026-04-03 - Properties panel now respects selected-object context in select mode
+- Updated [../js/app.js](../js/app.js) so context-sensitive property groups stay visible for the selected object even after the active tool returns to `select`
+- This fixes the remaining UI-state issue where gradient, line, text, and stroked-shape controls disappeared immediately after creation or on later selection
+
+### Session: 2026-04-03 - Selected objects now repopulate the secondary-colour UI
+- Updated [../js/editor.js](../js/editor.js) and [../js/app.js](../js/app.js) so selectable objects that use primary and secondary colours, especially gradients and lines, push those colours back into the properties panel when selected
+- This keeps the visible colour controls aligned with the selected object instead of leaving the secondary picker stale after selecting gradient-backed objects
+
+### Session: 2026-04-03 - Line tool now uses the visible two-colour controls
+- Updated [../js/editor.js](../js/editor.js) so line creation and selected-line edits use a primary-to-secondary gradient stroke instead of exposing a second colour control that only partially applied
+- This keeps the line tool aligned with the current properties UI instead of hiding a control that is now intentionally supported
+
+### Session: 2026-04-03 - Gradient and text property follow-up
+- Updated [../js/editor.js](../js/editor.js) so the gradient tool now behaves like a drag-created selectable object instead of immediately merging onto the base paint layer
+- Updated [../js/editor.js](../js/editor.js) and [../js/app.js](../js/app.js) so font controls apply to the selected text object and the secondary-colour control updates selected line and shape strokes
+- This addresses the remaining active QA reports around gradient behavior and text property controls from [QA/Tests/Slice1/Chrome/MANUAL-TEST-CHECKLIST.md](QA/Tests/Slice1/Chrome/MANUAL-TEST-CHECKLIST.md) and [QA/Tests/Slice1/Edge/MANUAL-TEST-CHECKLIST.md](QA/Tests/Slice1/Edge/MANUAL-TEST-CHECKLIST.md)
+
+### Session: 2026-04-03 - Upload-image shortcut reference removed
+- Updated [../index.html](../index.html), [../js/app.js](../js/app.js), [QA/MANUAL-TEST-CHECKLIST.md](QA/MANUAL-TEST-CHECKLIST.md), and [QA/QA-TEST-PLAN.md](QA/QA-TEST-PLAN.md) so upload image is treated as a toolbar action rather than an advertised keyboard shortcut
+- This removes the misleading `U` shortcut reference from the UI and QA docs without claiming unsupported shortcut behavior as a shipped feature
+
+### Session: 2026-04-03 - Layer insertion order stabilized for duplication follow-up
+- Updated [../js/editor.js](../js/editor.js) so duplicate, upload-image, text, and shape insertion prefer the current layer context instead of always inserting above the first paint layer
+- This addresses the next QA follow-up cluster from [QA/Tests/Slice1/Chrome/MANUAL-TEST-CHECKLIST.md](QA/Tests/Slice1/Chrome/MANUAL-TEST-CHECKLIST.md) and [QA/Tests/Slice1/Edge/MANUAL-TEST-CHECKLIST.md](QA/Tests/Slice1/Edge/MANUAL-TEST-CHECKLIST.md) around duplicated layer folders and multi-image group splitting
+
+### Session: 2026-04-03 - Non-base raster targeting fix started
+- Updated [../js/editor.js](../js/editor.js) so brush, eraser, and fill operate in the selected image layer's local bounds instead of rebuilding painted sublayers as full-canvas images at offset positions
+- This addresses the first QA follow-up cluster from [QA/Tests/Slice1/Chrome/MANUAL-TEST-CHECKLIST.md](QA/Tests/Slice1/Chrome/MANUAL-TEST-CHECKLIST.md) and [QA/Tests/Slice1/Edge/MANUAL-TEST-CHECKLIST.md](QA/Tests/Slice1/Edge/MANUAL-TEST-CHECKLIST.md) around non-base-layer painting and layer shifting
+
+### Session: 2026-04-02 - Slice1 QA checklist copies created
+- Copied [QA/MANUAL-TEST-CHECKLIST.md](QA/MANUAL-TEST-CHECKLIST.md) into [QA/Tests/Slice1/Chrome/MANUAL-TEST-CHECKLIST.md](QA/Tests/Slice1/Chrome/MANUAL-TEST-CHECKLIST.md) and [QA/Tests/Slice1/Edge/MANUAL-TEST-CHECKLIST.md](QA/Tests/Slice1/Edge/MANUAL-TEST-CHECKLIST.md)
+- Prefilled test metadata for owner `hman0994`, date `2026-04-02`, OS `Windows 11`, run mode `local HTTP`, and browser based on the folder name
+- Adjusted the copied checklist links so they still point back to [QA/QA-TEST-PLAN.md](QA/QA-TEST-PLAN.md) from the deeper QA folder structure
+
+### Session: 2026-04-02 - Manual checklist converted to QA run template
+- Converted [QA/MANUAL-TEST-CHECKLIST.md](QA/MANUAL-TEST-CHECKLIST.md) into a copy-friendly Markdown checklist with test-run metadata fields and task checkboxes for easier slice-by-slice tracking
+- Removed the last timing-oriented merge-check item so the manual checklist stays aligned with the functionality-first QA plan
+
+### Session: 2026-04-02 - QA plan readability and merge-gate clarification
+- Reformatted [QA/QA-TEST-PLAN.md](QA/QA-TEST-PLAN.md) with a quicker-scanning structure and added an explicit merge-gate runbook
+- Clarified what `run the merge-gate` means in concrete step-by-step terms for the current migration slices
+
+### Session: 2026-04-02 - QA plan simplified around functionality
+- Removed performance-metric recording guidance from [QA/QA-TEST-PLAN.md](QA/QA-TEST-PLAN.md) and simplified the merge-gate around feature functionality, regression coverage, and export/save-load parity
+
+### Session: 2026-04-02 - Parallel workstream planning package
+- Created [parallel-workstreams/README.md](parallel-workstreams/README.md) as the coordination index for agent-owned modernization workstreams
+- Added one `PLAN.md` per agent workstream under [parallel-workstreams](parallel-workstreams/README.md) so the architecture shift can be executed in controlled parallel slices
+- Added [parallel-workstreams/PROMPTS.md](parallel-workstreams/PROMPTS.md) plus one `START_PROMPT.md` per workstream so each agent has a reusable kickoff brief
+- Linked the parallel package from [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) and this roadmap
+- Logged the planning expansion in [../CHANGELOG.md](../CHANGELOG.md)
+
+### Session: 2026-04-02 - Foundation contract baseline published
+- Updated [ARCHITECTURE.md](ARCHITECTURE.md) with the first migration contract baseline covering module boundaries, state ownership, naming rules, and high-risk overlap zones
+- Updated [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) and [parallel-workstreams/README.md](parallel-workstreams/README.md) so the shared terminology and resolved state-boundary decisions match the architecture reference
+- Added ADRs for the core-vs-UI migration seam and for excluding transient tool/UI state from the first persisted document schema
+
+### Session: 2026-04-02 - Improvement plan document created
+- Created [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) as the repo-facing architecture modernization plan
+- Linked this roadmap to the improvement plan so long-range architecture work and near-term backlog tracking stay separated
+- Logged the documentation addition in [../CHANGELOG.md](../CHANGELOG.md)
 
 ### Session: 2026-04-01 — Rebrand, multi-car support, picker refinement
 - Rebranded the app UI and styling to Livery Lab

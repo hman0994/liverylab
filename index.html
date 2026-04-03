@@ -194,9 +194,9 @@
       <span class="tooltip">Text  [T]</span>
     </button>
 
-    <button class="tool-btn" data-tool="upload-image" title="Upload Image (U)">
+    <button class="tool-btn" data-tool="upload-image" title="Upload Image">
       🖼
-      <span class="tooltip">Upload Decal / Logo  [U]</span>
+      <span class="tooltip">Upload Decal / Logo</span>
     </button>
 
     <div class="toolbar-sep"></div>
@@ -275,16 +275,7 @@
         <div class="props-group" data-tools="text">
           <div class="prop-row">
             <span class="prop-label">Font</span>
-            <select id="prop-font">
-              <option>Arial</option>
-              <option>Arial Black</option>
-              <option>Impact</option>
-              <option>Courier New</option>
-              <option>Georgia</option>
-              <option>Verdana</option>
-              <option>Trebuchet MS</option>
-              <option>Times New Roman</option>
-            </select>
+            <select id="prop-font"></select>
           </div>
           <div class="prop-row">
             <span class="prop-label">Size</span>
@@ -363,7 +354,11 @@
 <!-- ── Application Scripts ──────────────────────────────── -->
 <script src="js/vendor/tga.js"></script>
 <script src="js/export.js"></script>
+  <script src="js/core/document/document-schema.js"></script>
+<script src="js/core/history/transaction-history.js"></script>
 <script src="js/editor.js"></script>
+<script src="js/core/dispatcher.js"></script>
+<script src="js/core/app-store.js"></script>
 <script src="js/version.js"></script>
 <script src="js/app.js"></script>
 

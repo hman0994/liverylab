@@ -48,7 +48,11 @@ class PaintEditor {
     this._redoStack = [];
     this._suspendHistory = false;
     this._nextObjectId = 1;
-    this._historyStateProperties = ['_id', 'name', 'locked', '_isGuide', '_isSpecMap', '_groupName', 'globalCompositeOperation', 'perPixelTargetFind'];
+    this._historyStateProperties = ['_id', 'name', 'locked', '_isGuide', '_isSpecMap', '_groupName', 'globalCompositeOperation', 'perPixelTargetFind', '_primaryColor', '_secondaryColor'];
+    this._historySession = window.LiveryLabHistory
+      ? window.LiveryLabHistory.createHistorySession({ maxEntries: 50, coalesceWindowMs: 250 })
+      : null;
+    this._pendingHistoryFlushHandle = 0;
 
     // ── Template reference ─────────────────────────────────────
     this._templateObject = null;
@@ -62,6 +66,8 @@ class PaintEditor {
 
     // ── Active layer (target for brush/eraser drawing) ─────────
     this._activeLayer = null;
+    this._toolTargetObject = null;
+    this._documentContext = { car: null };
 
     // Track objects whose interactivity was disabled for paint modes
     this._lockedForPaint = [];
@@ -70,6 +76,7 @@ class PaintEditor {
     this.onLayersChanged = null;   // () => void
     this.onSelectionChanged = null; // (fabricObj | null) => void
     this.onToolChanged = null;     // (toolName) => void
+    this.onDocumentLoaded = null;  // ({ document, migration }) => void
 
     this._setupEventListeners();
     this._saveState();             // Push initial (blank) state
@@ -154,6 +161,12 @@ class PaintEditor {
       this.canvas.renderAll();
       if (this.onSelectionChanged) this.onSelectionChanged(null);
       return;
+    }
+
+    if (obj && this._isSelectableUserObject(obj)) {
+      this._toolTargetObject = obj;
+    } else if (!obj && this.currentTool === 'select') {
+      this._toolTargetObject = null;
     }
 
     if (obj && this._isValidPaintLayer(obj)) {
@@ -255,6 +268,28 @@ class PaintEditor {
     return objects.length; // fallback: top of stack
   }
 
+  _getPreferredInsertIndex(preferredAnchor = null) {
+    const objects = this.canvas.getObjects();
+
+    const isUsableAnchor = (obj) => {
+      if (!obj) return false;
+      const index = objects.indexOf(obj);
+      return index >= 0 && obj.name !== '__template__' && obj.name !== '__background__';
+    };
+
+    const anchor = isUsableAnchor(preferredAnchor)
+      ? preferredAnchor
+      : (isUsableAnchor(this.canvas.getActiveObject())
+          ? this.canvas.getActiveObject()
+          : (isUsableAnchor(this._activeLayer) ? this._activeLayer : null));
+
+    if (anchor) {
+      return objects.indexOf(anchor) + 1;
+    }
+
+    return this._getInsertIndex();
+  }
+
   /**
    * Create a blank transparent image layer at full art resolution.
    * Used as fallback when a painting tool is invoked with no active layer.
@@ -301,6 +336,7 @@ class PaintEditor {
       _groupName:               target._groupName,
       globalCompositeOperation: target.globalCompositeOperation,
       perPixelTargetFind:       !!target.perPixelTargetFind,
+      angle:                    target.angle,
     };
 
     fabric.Image.fromURL(mergedDataUrl, (newImg) => {
@@ -342,18 +378,17 @@ class PaintEditor {
 
     const AW = this.ART_W;
     const AH = this.ART_H;
+    const targetWidth = Math.max(1, Math.round(target.width * target.scaleX));
+    const targetHeight = Math.max(1, Math.round(target.height * target.scaleY));
     const offscreen = document.createElement('canvas');
-    offscreen.width = AW;
-    offscreen.height = AH;
+    offscreen.width = targetWidth;
+    offscreen.height = targetHeight;
     const ctx = offscreen.getContext('2d');
 
     // Draw existing target layer
     const targetEl = target.getElement ? target.getElement() : target._element;
     if (targetEl) {
-      ctx.save();
-      ctx.translate(target.left, target.top);
-      ctx.drawImage(targetEl, 0, 0, target.width * target.scaleX, target.height * target.scaleY);
-      ctx.restore();
+      ctx.drawImage(targetEl, 0, 0, targetWidth, targetHeight);
     }
 
     // Draw object raster
@@ -362,7 +397,7 @@ class PaintEditor {
     objectImg.onload = () => {
       ctx.save();
       ctx.globalCompositeOperation = isErase ? 'destination-out' : 'source-over';
-      ctx.drawImage(objectImg, 0, 0);
+      ctx.drawImage(objectImg, -Math.round(target.left), -Math.round(target.top));
       ctx.restore();
 
       const merged = offscreen.toDataURL('image/png');
@@ -372,16 +407,80 @@ class PaintEditor {
   }
 
   /* ── Undo / Redo ──────────────────────────────────────────── */
+  _serializeCanvasForDocument() {
+    return this.canvas.toJSON(this._historyStateProperties);
+  }
+
   _serializeCanvasState() {
-    return JSON.stringify(this.canvas.toJSON(this._historyStateProperties));
+    return JSON.stringify(this._serializeCanvasForDocument());
+  }
+
+  _pushHistorySnapshot(json, options = {}) {
+    if (this._undoStack[this._undoStack.length - 1] === json) return false;
+
+    this._undoStack.push(json);
+    if (this._undoStack.length > 50) this._undoStack.shift();
+
+    if (options.clearRedo !== false) {
+      this._redoStack = [];
+    }
+
+    return true;
+  }
+
+  _clearPendingHistoryFlush() {
+    if (!this._pendingHistoryFlushHandle) return;
+    window.clearTimeout(this._pendingHistoryFlushHandle);
+    this._pendingHistoryFlushHandle = 0;
+  }
+
+  _schedulePendingHistoryFlush() {
+    if (!this._historySession) return;
+
+    this._clearPendingHistoryFlush();
+    this._pendingHistoryFlushHandle = window.setTimeout(() => {
+      this._pendingHistoryFlushHandle = 0;
+      this._flushPendingHistoryTransaction('idle');
+    }, 250);
+  }
+
+  _flushPendingHistoryTransaction(reason = 'boundary') {
+    this._clearPendingHistoryFlush();
+
+    if (!this._historySession || !this._historySession.hasActiveTransaction()) {
+      return null;
+    }
+
+    const entry = this._historySession.commitActiveTransaction({
+      afterSnapshot: this._serializeCanvasState(),
+      afterSelectedObjectId: this.canvas.getActiveObject()?._id || null,
+      afterActiveLayerId: this.getActiveLayerId(),
+      commitReason: reason,
+    });
+
+    if (!entry) return null;
+
+    this._pushHistorySnapshot(entry.afterSnapshot, { clearRedo: true });
+    return entry;
+  }
+
+  _discardPendingHistoryTransaction(reason = 'reset') {
+    this._clearPendingHistoryFlush();
+    if (!this._historySession || !this._historySession.hasActiveTransaction()) return null;
+    return this._historySession.cancelActiveTransaction(reason);
+  }
+
+  _resetHistoryState() {
+    this._discardPendingHistoryTransaction('reset');
+    this._undoStack = [];
+    this._redoStack = [];
+    if (this._historySession) this._historySession.reset();
   }
 
   _saveState() {
+    this._flushPendingHistoryTransaction('boundary');
     const json = this._serializeCanvasState();
-    if (this._undoStack[this._undoStack.length - 1] === json) return;
-    this._undoStack.push(json);
-    if (this._undoStack.length > 50) this._undoStack.shift();
-    this._redoStack = [];
+    this._pushHistorySnapshot(json, { clearRedo: true });
   }
 
   _restoreToolStateAfterHistoryLoad(selectedObjectId = null, activeLayerId = null) {
@@ -425,9 +524,29 @@ class PaintEditor {
     }
   }
 
-  _loadState(json) {
+  _loadState(json, onLoaded = null) {
+    this._discardPendingHistoryTransaction('load-state');
     this._suspendHistory = true;
     const data = JSON.parse(json);
+    if (Number.isFinite(data?.width) && Number.isFinite(data?.height)) {
+      this.ART_W = data.width;
+      this.ART_H = data.height;
+    }
+
+    const backgroundObject = Array.isArray(data?.objects)
+      ? data.objects.find((obj) => obj?.name === '__background__')
+      : null;
+    if (typeof backgroundObject?.fill === 'string') {
+      this.backgroundColor = backgroundObject.fill;
+    }
+
+    const templateObject = Array.isArray(data?.objects)
+      ? data.objects.find((obj) => obj?.name === '__template__')
+      : null;
+    if (typeof templateObject?.opacity === 'number') {
+      this._templateOpacity = templateObject.opacity;
+    }
+
     const zoom = this.currentZoom;
     const selectedObjectId = this.canvas.getActiveObject()?._id || null;
     const activeLayerId = this._activeLayer?._id || null;
@@ -450,10 +569,12 @@ class PaintEditor {
       this._suspendHistory = false;
       if (this.onLayersChanged) this.onLayersChanged();
       if (this.onSelectionChanged) this.onSelectionChanged(this.canvas.getActiveObject() || null);
+      if (onLoaded) onLoaded();
     });
   }
 
   undo() {
+    this._flushPendingHistoryTransaction('undo');
     if (this._undoStack.length <= 1) return;
     const cur = this._undoStack.pop();
     this._redoStack.push(cur);
@@ -461,6 +582,7 @@ class PaintEditor {
   }
 
   redo() {
+    this._flushPendingHistoryTransaction('redo');
     if (this._redoStack.length === 0) return;
     const state = this._redoStack.pop();
     this._undoStack.push(state);
@@ -469,6 +591,46 @@ class PaintEditor {
 
   canUndo() { return this._undoStack.length > 1; }
   canRedo() { return this._redoStack.length > 0; }
+
+  getActiveLayerId() {
+    return this._activeLayer?._id || null;
+  }
+
+  getDocumentCar() {
+    return this._documentContext.car ? { ...this._documentContext.car } : null;
+  }
+
+  setDocumentCar(car) {
+    this._documentContext.car = car ? { ...car } : null;
+  }
+
+  getDocumentSessionState() {
+    return {
+      selection: {
+        selectedObjectId: this.canvas.getActiveObject()?._id || null,
+        activeLayerId: this.getActiveLayerId(),
+      },
+      viewport: {
+        zoom: this.currentZoom,
+      },
+    };
+  }
+
+  getWorkspaceState() {
+    const activeObject = this.canvas.getActiveObject() || null;
+
+    return {
+      tool: {
+        active: this.currentTool,
+      },
+      selection: {
+        selectedObjectId: activeObject?._id || null,
+        selectedObjectType: activeObject?.type || null,
+        activeLayerId: this.getActiveLayerId(),
+      },
+      layers: this.getLayers(),
+    };
+  }
 
   /* ── Zoom ─────────────────────────────────────────────────── */
   setZoom(zoom) {
@@ -487,6 +649,7 @@ class PaintEditor {
    * Clears all canvas content and resets the background.
    */
   resizeArtboard(w, h) {
+    this._discardPendingHistoryTransaction('artboard-resize');
     this.ART_W = w;
     this.ART_H = h;
     this.canvas.setWidth(w);
@@ -494,8 +657,7 @@ class PaintEditor {
     this.canvas.setZoom(1);
     this.canvas.clear();
     this.setBackgroundColor(this.backgroundColor);
-    this._undoStack = [];
-    this._redoStack = [];
+    this._resetHistoryState();
     this._templateObject = null;
     this._saveState();
     this.setZoom(this.currentZoom);
@@ -666,6 +828,91 @@ class PaintEditor {
     this.canvas.freeDrawingBrush = brush;
   }
 
+  _createGradientFill(width, height) {
+    return new fabric.Gradient({
+      type: 'linear',
+      coords: {
+        x1: 0,
+        y1: 0,
+        x2: Math.max(1, width),
+        y2: Math.max(1, height),
+      },
+      colorStops: [
+        { offset: 0, color: this.primaryColor },
+        { offset: 1, color: this.secondaryColor },
+      ],
+    });
+  }
+
+  _createLineStroke(line) {
+    const x1 = Number.isFinite(Number(line?.x1)) ? Number(line.x1) : 0;
+    const y1 = Number.isFinite(Number(line?.y1)) ? Number(line.y1) : 0;
+    const x2 = Number.isFinite(Number(line?.x2)) ? Number(line.x2) : x1 + 1;
+    const y2 = Number.isFinite(Number(line?.y2)) ? Number(line.y2) : y1;
+
+    return new fabric.Gradient({
+      type: 'linear',
+      coords: {
+        x1,
+        y1,
+        x2,
+        y2,
+      },
+      colorStops: [
+        { offset: 0, color: this._colorWithOpacity(this.primaryColor, this.opacity) },
+        { offset: 1, color: this._colorWithOpacity(this.secondaryColor, this.opacity) },
+      ],
+    });
+  }
+
+  _applyObjectColorMetadata(obj, primaryColor = this.primaryColor, secondaryColor = this.secondaryColor) {
+    if (!obj) return;
+    obj._primaryColor = primaryColor;
+    obj._secondaryColor = secondaryColor;
+  }
+
+  _hasGradientFill(obj) {
+    const fill = obj?.fill;
+    return !!fill && typeof fill === 'object' && Array.isArray(fill.colorStops);
+  }
+
+  _isGradientObject(obj) {
+    return !!obj && (obj.type === 'rect' || obj.type === 'image') && this._hasGradientFill(obj);
+  }
+
+  _getRetainedToolTarget() {
+    const target = this.canvas.getActiveObject() || this._toolTargetObject;
+    if (!this._isSelectableUserObject(target)) return null;
+    if (this.canvas.getObjects().indexOf(target) < 0) return null;
+    return target;
+  }
+
+  _isFillableObject(obj) {
+    return !!obj && ['path', 'i-text', 'text', 'rect', 'ellipse', 'circle'].includes(obj.type);
+  }
+
+  _isPointInsideObject(obj, x, y) {
+    if (!obj || typeof obj.getBoundingRect !== 'function') return false;
+    const bounds = obj.getBoundingRect(true, true);
+    return x >= bounds.left && x <= bounds.left + bounds.width && y >= bounds.top && y <= bounds.top + bounds.height;
+  }
+
+  _fillSelectedObject(target) {
+    if (!this._isFillableObject(target)) return false;
+
+    target.set('fill', this._colorWithOpacity(this.primaryColor, this.opacity));
+    target._primaryColor = this.primaryColor;
+    target.set({ selectable: true, evented: true });
+
+    if (typeof target.setCoords === 'function') target.setCoords();
+
+    this.canvas.setActiveObject(target);
+    this.canvas.renderAll();
+    this._saveState();
+    if (this.onSelectionChanged) this.onSelectionChanged(target);
+    return true;
+  }
+
   /* ── Mouse handlers for shape drawing ────────────────────── */
   _canvasPoint(event) {
     const ptr = this.canvas.getPointer(event.e);
@@ -686,11 +933,6 @@ class PaintEditor {
       this._addTextAt(pt.x, pt.y);
       return;
     }
-    if (tool === 'gradient') {
-      this._addGradientToLayer();
-      return;
-    }
-
     // Start drawing a shape
     this._isDrawing  = true;
     this._shapeStart = pt;
@@ -704,6 +946,8 @@ class PaintEditor {
       strokeUniform: true,
       selectable:  false,
       evented:     false,
+      _primaryColor: this.primaryColor,
+      _secondaryColor: this.secondaryColor,
     };
 
     if (tool === 'rect') {
@@ -711,11 +955,25 @@ class PaintEditor {
     } else if (tool === 'circle') {
       this._activeShape = new fabric.Ellipse({ ...common, rx: 0, ry: 0 });
     } else if (tool === 'line') {
-      this._activeShape = new fabric.Line(
+      const line = new fabric.Line(
         [pt.x, pt.y, pt.x, pt.y],
-        { stroke: this._colorWithOpacity(this.primaryColor, this.opacity),
+        { stroke:
+            this._colorWithOpacity(this.primaryColor, this.opacity),
           strokeWidth: this.brushSize, selectable: false, evented: false }
       );
+      line.set('stroke', this._createLineStroke(line));
+      this._applyObjectColorMetadata(line);
+      this._activeShape = line;
+    } else if (tool === 'gradient') {
+      this._activeShape = new fabric.Rect({
+        ...common,
+        width: 0,
+        height: 0,
+        stroke: null,
+        strokeWidth: 0,
+        fill: this._createGradientFill(1, 1),
+      });
+      this._applyObjectColorMetadata(this._activeShape);
     }
 
     this._suspendHistory = true;
@@ -739,6 +997,20 @@ class PaintEditor {
       this._activeShape.set({ left: Math.min(pt.x, start.x), top: Math.min(pt.y, start.y), rx, ry });
     } else if (tool === 'line') {
       this._activeShape.set({ x2: pt.x, y2: pt.y });
+      this._activeShape.set('stroke', this._createLineStroke(this._activeShape));
+    } else if (tool === 'gradient') {
+      const x = Math.min(pt.x, start.x);
+      const y = Math.min(pt.y, start.y);
+      const width = Math.max(1, Math.abs(pt.x - start.x));
+      const height = Math.max(1, Math.abs(pt.y - start.y));
+      this._activeShape.set({
+        left: x,
+        top: y,
+        width,
+        height,
+        fill: this._createGradientFill(width, height),
+      });
+      this._applyObjectColorMetadata(this._activeShape);
     }
 
     this.canvas.renderAll();
@@ -754,7 +1026,7 @@ class PaintEditor {
 
     // Give the shape a proper name and group for the layers panel
     const groupName = (this._activeLayer && this._activeLayer._groupName) || '';
-    const toolNames = { rect: 'Rectangle', circle: 'Ellipse', line: 'Line' };
+    const toolNames = { rect: 'Rectangle', circle: 'Ellipse', line: 'Line', gradient: 'Gradient' };
     shape.set({
       selectable: true,
       evented: true,
@@ -764,7 +1036,7 @@ class PaintEditor {
 
     // Insert as an independent layer above Base Paint
     this.canvas.remove(shape);  // remove the temp preview
-    const idx = this._getInsertIndex();
+    const idx = this._getPreferredInsertIndex(this._activeLayer);
     this.canvas.insertAt(shape, idx);
     this._makeOnlyActiveInteractive(shape);
     this._saveState();
@@ -787,16 +1059,16 @@ class PaintEditor {
    * editor is pre-export convenience.
    */
   _doFill(x, y) {
-    const AW = this.ART_W;
-    const AH = this.ART_H;
+    const retainedTarget = this._getRetainedToolTarget();
+    if (this._isFillableObject(retainedTarget) && this._isPointInsideObject(retainedTarget, x, y)) {
+      if (this._fillSelectedObject(retainedTarget)) return;
+    }
 
     const target = this._activeLayer;
     if (this._isValidPaintLayer(target)) {
       const targetEl = target.getElement ? target.getElement() : target._element;
       if (!targetEl) return;
 
-      const AW = this.ART_W;
-      const AH = this.ART_H;
       const targetWidth  = Math.round(target.width * target.scaleX);
       const targetHeight = Math.round(target.height * target.scaleY);
 
@@ -804,20 +1076,23 @@ class PaintEditor {
       const py = Math.round(y);
       if (px < target.left || px >= target.left + targetWidth || py < target.top || py >= target.top + targetHeight) return;
 
+      const localX = Math.round(px - target.left);
+      const localY = Math.round(py - target.top);
+
       const offscreen = document.createElement('canvas');
-      offscreen.width  = AW;
-      offscreen.height = AH;
+      offscreen.width  = targetWidth;
+      offscreen.height = targetHeight;
       const ctx = offscreen.getContext('2d');
 
       // Only draw the active layer onto the offscreen canvas
-      ctx.drawImage(targetEl, target.left, target.top, targetWidth, targetHeight);
+      ctx.drawImage(targetEl, 0, 0, targetWidth, targetHeight);
 
-      const id = ctx.getImageData(0, 0, AW, AH);
+      const id = ctx.getImageData(0, 0, targetWidth, targetHeight);
       const fillRGBA = this._hexToRGBA(this.primaryColor, this.opacity);
-      const targetRGBA = this._getPixel(id.data, px, py, AW);
+      const targetRGBA = this._getPixel(id.data, localX, localY, targetWidth);
       if (this._colorsMatch(targetRGBA, fillRGBA)) return;
 
-      this._scanlineFill(id.data, px, py, AW, AH, targetRGBA, fillRGBA);
+      this._scanlineFill(id.data, localX, localY, targetWidth, targetHeight, targetRGBA, fillRGBA);
       ctx.putImageData(id, 0, 0);
 
       const filledUrl = offscreen.toDataURL('image/png');
@@ -826,6 +1101,8 @@ class PaintEditor {
     }
 
     // No active layer — create a new layer filled with the primary colour
+    const AW = this.ART_W;
+    const AH = this.ART_H;
     const newLayer = this._createBlankLayer(false);
     const px = Math.round(x);
     const py = Math.round(y);
@@ -917,11 +1194,12 @@ class PaintEditor {
       stroke:     null,
       name:       'Text',
       _groupName: groupName,
+      _primaryColor: this.primaryColor,
     });
 
     // Text gets its own independent layer so it can be repositioned
     this._unlockObjectsForPainting();
-    const idx = this._getInsertIndex();
+    const idx = this._getPreferredInsertIndex(this._activeLayer);
     this._ensureObjectId(obj);
     this.canvas.insertAt(obj, idx);
     this._makeOnlyActiveInteractive(obj);
@@ -940,6 +1218,8 @@ class PaintEditor {
       strokeWidth: this.strokeWidth,
       strokeUniform: true,
       name:        'Rectangle',
+      _primaryColor: this.primaryColor,
+      _secondaryColor: this.secondaryColor,
     });
     this._addAndSelect(obj);
   }
@@ -953,6 +1233,8 @@ class PaintEditor {
       strokeWidth: this.strokeWidth,
       strokeUniform: true,
       name:        'Ellipse',
+      _primaryColor: this.primaryColor,
+      _secondaryColor: this.secondaryColor,
     });
     this._addAndSelect(obj);
   }
@@ -968,16 +1250,10 @@ class PaintEditor {
       width: this.ART_W, height: this.ART_H,
       opacity: this.opacity,
       name: 'Gradient',
+      _primaryColor: this.primaryColor,
+      _secondaryColor: this.secondaryColor,
     });
-    const gradient = new fabric.Gradient({
-      type: 'linear',
-      coords: { x1: 0, y1: 0, x2: this.ART_W, y2: 0 },
-      colorStops: [
-        { offset: 0, color: this.primaryColor },
-        { offset: 1, color: this.secondaryColor },
-      ],
-    });
-    obj.set('fill', gradient);
+    obj.set('fill', this._createGradientFill(this.ART_W, this.ART_H));
     this._addAndSelect(obj);
   }
 
@@ -986,7 +1262,10 @@ class PaintEditor {
       stroke:      this._colorWithOpacity(this.primaryColor, this.opacity),
       strokeWidth: this.brushSize,
       name:        'Line',
+      _primaryColor: this.primaryColor,
+      _secondaryColor: this.secondaryColor,
     });
+    obj.set('stroke', this._createLineStroke(obj));
     this._addAndSelect(obj);
   }
 
@@ -1002,7 +1281,7 @@ class PaintEditor {
       this.canvas.remove(obj);
       this.canvas.setActiveObject(target);
     } else {
-      const idx = this._getInsertIndex();
+      const idx = this._getPreferredInsertIndex(this._activeLayer);
       this.canvas.insertAt(obj, idx);
       this.canvas.setActiveObject(obj);
     }
@@ -1017,8 +1296,8 @@ class PaintEditor {
       fabric.Image.fromURL(e.target.result, (img) => {
         if (img.width > 1200) img.scaleToWidth(600);
         const groupName = (this._activeLayer && this._activeLayer._groupName) || '';
-        img.set({ left: 300, top: 300, name: file.name.replace(/\.[^.]+$/, ''), _groupName: groupName, perPixelTargetFind: true });
-        const idx = this._getInsertIndex();
+      img.set({ left: 300, top: 300, name: file.name.replace(/\.[^.]+$/, ''), _groupName: groupName, perPixelTargetFind: true });
+      const idx = this._getPreferredInsertIndex(this.canvas.getActiveObject() || this._activeLayer);
         this._ensureObjectId(img);
         this.canvas.insertAt(img, idx);
         this._makeOnlyActiveInteractive(img);
@@ -1032,6 +1311,8 @@ class PaintEditor {
   /* ── Template ─────────────────────────────────────────────── */
   loadTemplate(dataUrl, opacity = 0.30) {
     return new Promise((resolve) => {
+      this._flushPendingHistoryTransaction('boundary');
+
       // Remove previous template if one exists
       if (this._templateObject) {
         this.canvas.remove(this._templateObject);
@@ -1081,6 +1362,7 @@ class PaintEditor {
    * _isGuide: locked overlay excluded from TGA export.
    */
   async loadPsdLayers(psd) {
+    this._discardPendingHistoryTransaction('psd-import');
     this._suspendHistory = true;
     this.ART_W = psd.width;
     this.ART_H = psd.height;
@@ -1111,8 +1393,7 @@ class PaintEditor {
       await this._addPsdLayer(ld);
     }
 
-    this._undoStack = [];
-    this._redoStack = [];
+    this._resetHistoryState();
     this._suspendHistory = false;
     this._saveState();
 
@@ -1268,10 +1549,63 @@ class PaintEditor {
   setLayerOpacity(v) {
     const active = this.canvas.getActiveObject();
     if (!active || active._isGuide || active._isSpecMap || active.name === '__template__') return;
-    active.set('opacity', v);
+
+    const nextOpacity = Math.max(0, Math.min(1, Number(v)));
+    if (!Number.isFinite(nextOpacity)) return;
+
+    const currentOpacity = Number.isFinite(Number(active.opacity)) ? Number(active.opacity) : 1;
+    if (Math.abs(currentOpacity - nextOpacity) < 0.0001) return;
+
+    const historyApi = window.LiveryLabHistory;
+    const operationName = historyApi?.OPERATION_TYPES?.LAYER_OPACITY_SET || 'document.layer.opacity.set';
+    const checkpointBoundary = historyApi?.CHECKPOINT_BOUNDARIES?.TRANSACTION_IDLE || 'transaction-idle';
+    const reversibility = historyApi?.REVERSIBILITY?.REVERSIBLE || 'reversible';
+
+    if (this._historySession) {
+      const transactionMeta = {
+        name: operationName,
+        label: 'Adjust layer opacity',
+        coalesceKey: `layer-opacity:${active._id || 'active-object'}`,
+        reversibility,
+        checkpointBoundary,
+        beforeSnapshot: this._serializeCanvasState(),
+        beforeSelectedObjectId: active._id || null,
+        beforeActiveLayerId: this.getActiveLayerId(),
+        renderInvalidation: {
+          scope: 'viewport-and-export',
+          kind: 'layer-opacity',
+          layerIds: [active._id || null].filter(Boolean),
+        },
+      };
+
+      if (!this._historySession.canExtendActiveTransaction(transactionMeta)) {
+        this._flushPendingHistoryTransaction('boundary');
+        this._historySession.openTransaction(transactionMeta);
+      }
+
+      this._historySession.recordOperation({
+        name: operationName,
+        targetId: active._id || null,
+        opacity: nextOpacity,
+        mode: 'slider',
+      });
+    }
+
+    active.set('opacity', nextOpacity);
     this.canvas.renderAll();
-    this._saveState();
+
+    if (!this._historySession) {
+      this._saveState();
+    }
+
     if (this.onLayersChanged) this.onLayersChanged();
+    if (this.onSelectionChanged) this.onSelectionChanged(active);
+  }
+
+  commitLayerOpacityChange() {
+    if (this._historySession) {
+      this._flushPendingHistoryTransaction('explicit');
+    }
   }
 
   setStrokeWidth(w) {
@@ -1316,8 +1650,15 @@ class PaintEditor {
     this._saveState();
   }
 
-  setFont(family)     { this.currentFont = family; }
-  setFontSize(size)   { this.currentFontSize = size; }
+  setFont(family) {
+    this.currentFont = family;
+    this.updateActiveTextStyle({ fontFamily: family });
+  }
+
+  setFontSize(size) {
+    this.currentFontSize = size;
+    this.updateActiveTextStyle({ fontSize: size });
+  }
 
   /* ── Active Object helpers ────────────────────────────────── */
   getActiveObject() { return this.canvas.getActiveObject() || null; }
@@ -1327,11 +1668,45 @@ class PaintEditor {
     if (!obj) return;
     if (obj.type === 'path' || obj.type === 'i-text' || obj.type === 'text') {
       obj.set('fill', hex);
+      obj._primaryColor = hex;
     } else if (obj.type === 'rect' || obj.type === 'ellipse' || obj.type === 'circle') {
-      obj.set('fill', hex);
+      if (this._isGradientObject(obj)) {
+        obj.set('fill', this._createGradientFill(obj.width || 1, obj.height || 1));
+      } else {
+        obj.set('fill', hex);
+      }
+      obj._primaryColor = hex;
     } else if (obj.type === 'line') {
-      obj.set('stroke', hex);
+      obj.set('stroke', this._createLineStroke(obj));
+      obj._primaryColor = hex;
     }
+    this.canvas.renderAll();
+  }
+
+  updateActiveSecondaryColor(hex) {
+    const obj = this.canvas.getActiveObject();
+    if (!obj) return;
+
+    if (obj.type === 'line') {
+      obj.set('stroke', this._createLineStroke(obj));
+      obj._secondaryColor = hex;
+    } else if (this._isGradientObject(obj)) {
+      obj.set('fill', this._createGradientFill(obj.width || 1, obj.height || 1));
+      obj._secondaryColor = hex;
+    } else if (obj.type === 'rect' || obj.type === 'ellipse' || obj.type === 'circle') {
+      obj.set('stroke', hex);
+      obj._secondaryColor = hex;
+    }
+
+    this.canvas.renderAll();
+  }
+
+  updateActiveTextStyle(changes = {}) {
+    const obj = this.canvas.getActiveObject();
+    if (!obj || (obj.type !== 'i-text' && obj.type !== 'text')) return;
+
+    obj.set(changes);
+    if (typeof obj.setCoords === 'function') obj.setCoords();
     this.canvas.renderAll();
   }
 
@@ -1358,10 +1733,14 @@ class PaintEditor {
     const active = this.canvas.getActiveObject();
     if (!active || active.name === '__template__') return;
     active.clone((cloned) => {
-      cloned.set({ left: active.left + 30, top: active.top + 30 });
+      cloned.set({
+        left: active.left + 30,
+        top: active.top + 30,
+        _groupName: cloned._groupName || active._groupName || '',
+      });
       if (cloned.name) cloned.name = cloned.name + ' copy';
       this._ensureObjectId(cloned);
-      const idx = this._getInsertIndex();
+      const idx = this._getPreferredInsertIndex(active);
       this.canvas.insertAt(cloned, idx);
       this._makeOnlyActiveInteractive(cloned);
       this.canvas.renderAll();
@@ -1372,16 +1751,60 @@ class PaintEditor {
     const active = this.canvas.getActiveObject();
     if (!this._isSelectableUserObject(active)) return false;
 
+    const historyApi = window.LiveryLabHistory;
+    const operationName = historyApi?.OPERATION_TYPES?.OBJECT_TRANSFORM_SET || 'document.object.transform.set';
+    const checkpointBoundary = historyApi?.CHECKPOINT_BOUNDARIES?.TRANSACTION_IDLE || 'transaction-idle';
+    const reversibility = historyApi?.REVERSIBILITY?.REVERSIBLE || 'reversible';
+
+    if (this._historySession) {
+      const transactionMeta = {
+        name: operationName,
+        label: 'Nudge selection',
+        coalesceKey: `nudge:${active._id || 'active-object'}`,
+        reversibility,
+        checkpointBoundary,
+        beforeSnapshot: this._serializeCanvasState(),
+        beforeSelectedObjectId: active._id || null,
+        beforeActiveLayerId: this.getActiveLayerId(),
+        renderInvalidation: {
+          scope: 'viewport-and-export',
+          kind: 'object-transform',
+          layerIds: [active._id || null].filter(Boolean),
+        },
+      };
+
+      if (!this._historySession.canExtendActiveTransaction(transactionMeta)) {
+        this._flushPendingHistoryTransaction('boundary');
+        this._historySession.openTransaction(transactionMeta);
+      }
+    }
+
     active.set({
       left: (active.left || 0) + dx,
       top: (active.top || 0) + dy,
     });
     active.setCoords();
     this.canvas.renderAll();
-    this._saveState();
+
+    if (this._historySession) {
+      this._historySession.recordOperation({
+        name: operationName,
+        targetId: active._id || null,
+        delta: { dx, dy },
+        mode: 'nudge',
+      });
+      this._schedulePendingHistoryFlush();
+    } else {
+      this._saveState();
+    }
+
     if (this.onLayersChanged) this.onLayersChanged();
     if (this.onSelectionChanged) this.onSelectionChanged(active);
     return true;
+  }
+
+  getHistoryDebugState() {
+    return this._historySession ? this._historySession.getDebugState() : null;
   }
 
   bringForward() {
@@ -1524,16 +1947,78 @@ class PaintEditor {
   }
 
   saveProject() {
-    const json = JSON.stringify(this.canvas.toJSON(this._historyStateProperties), null, 2);
+    this._flushPendingHistoryTransaction('save-project');
+    const payload = window.LiveryLabDocument
+      ? window.LiveryLabDocument.createDocumentSnapshot(this)
+      : this._serializeCanvasForDocument();
+    const json = JSON.stringify(payload, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
-    triggerDownload(blob, 'gr86-paint-project.json');
+    triggerDownload(blob, 'livery-lab-project.json');
   }
 
   loadProject(file) {
+    this._discardPendingHistoryTransaction('project-load');
     const reader = new FileReader();
     reader.onload = (e) => {
-      const data = JSON.parse(e.target.result);
-      this._loadState(JSON.stringify(data));
+      try {
+        const data = JSON.parse(e.target.result);
+        const normalized = window.LiveryLabDocument
+          ? window.LiveryLabDocument.normalizeProjectPayload(data)
+          : {
+              document: {
+                artboard: {
+                  width: data?.width || this.ART_W,
+                  height: data?.height || this.ART_H,
+                  backgroundColor: this.backgroundColor,
+                },
+                car: null,
+                template: { opacity: this._templateOpacity },
+                bridge: { fabricCanvas: data },
+              },
+              migration: {
+                source: 'legacy-fabric-json',
+                applied: ['loaded-without-document-schema-module'],
+              },
+            };
+
+        const fabricCanvas = window.LiveryLabDocument
+          ? window.LiveryLabDocument.getLegacyFabricCanvas(normalized.document)
+          : normalized.document.bridge.fabricCanvas;
+
+        if (!fabricCanvas) {
+          throw new Error('Project file is missing its runtime canvas payload.');
+        }
+
+        this.setDocumentCar(normalized.document.car || null);
+        if (typeof normalized.document.artboard?.backgroundColor === 'string') {
+          this.backgroundColor = normalized.document.artboard.backgroundColor;
+        }
+        if (typeof normalized.document.template?.opacity === 'number') {
+          this._templateOpacity = normalized.document.template.opacity;
+        }
+
+        this._resetHistoryState();
+        this._loadState(JSON.stringify(fabricCanvas), () => {
+          this._resetHistoryState();
+          this._saveState();
+
+          if (this.onDocumentLoaded) {
+            this.onDocumentLoaded(normalized);
+          }
+
+          if (typeof showToast === 'function') {
+            const isLegacyMigration = normalized.migration?.source === 'legacy-fabric-json';
+            const message = isLegacyMigration
+              ? `Legacy project loaded and migrated to EditorDocument v${normalized.document.version}.`
+              : `Project loaded (EditorDocument v${normalized.document.version}).`;
+            showToast(message, 'success');
+          }
+        });
+      } catch (error) {
+        if (typeof showToast === 'function') {
+          showToast('Could not load project: ' + error.message, 'error');
+        }
+      }
     };
     reader.readAsText(file);
   }
