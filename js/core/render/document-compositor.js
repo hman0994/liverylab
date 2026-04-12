@@ -398,7 +398,7 @@
     const canvas = options.targetCanvas || global.document.createElement('canvas');
     canvas.width = targetWidth;
     canvas.height = targetHeight;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const composedLayerIds = [];
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);

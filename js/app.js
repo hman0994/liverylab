@@ -577,7 +577,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return true;
   }
 
-  const TEMPLATE_BASE_URL = 'https://github.com/hman0994/liverylab-templates/releases/download/templates/';
+  const TEMPLATE_BASE_URL = 'https://pub-ffa36e76eed74d899fd26499d9c90bd6.r2.dev/';
 
   async function loadBuiltinTemplate(car) {
     if (!window.agPsd) {

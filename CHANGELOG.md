@@ -14,9 +14,16 @@ Versioning notes:
 
 ## [Unreleased]
 
+---
+
+## [2026-04-12] v0.2.0.2 — R2-hosted templates, CORS fix, canvas perf
+
 ### Changed
-- `js/app.js` — Template assets are now fetched from the external GitHub release (`https://github.com/hman0994/liverylab-templates/releases/download/templates/`) instead of the local `templates/` directory. Filenames are transformed from space-separated to dot-separated to match release asset naming (e.g. `ARCA Chevy SS.psd` → `ARCA.Chevy.SS.psd`).
-- `templates/cars.json` — Fixed Suit entry `file` field from `Suit.psd` to `Driver Suit.psd` to match the release asset name.
+- `README.md` — Major expansion: replaced static screenshots with 4 animated GIFs (`assets/GIF1.gif`–`GIF4.gif`), added detailed feature sections (template library category table, painting tools, layers/undo, export, project save/load), added workflow tips, and expanded Quick Start and export guidance.
+- `assets/GIF1.gif`, `assets/GIF2.gif`, `assets/GIF3.gif`, `assets/GIF4.gif` — Added animated GIFs demonstrating the app in action (template picker, brush tools, editor features, export workflow).
+- `js/app.js` — Template assets are now fetched from Cloudflare R2 (`pub-ffa36e76eed74d899fd26499d9c90bd6.r2.dev`) instead of the local `templates/` directory. Resolves CORS errors on GitHub Pages and removes GitHub as a runtime dependency for template loading.
+- `templates/cars.json` — Added Helmet and Suit (Driver Suit) entries. Fixed Suit `file` field from `Suit.psd` to `Driver Suit.psd` to match the release asset name.
+- `js/core/render/document-compositor.js` — Added `willReadFrequently: true` to the compositor canvas context to eliminate the repeated `getImageData` performance warning and improve render throughput.
 
 ### Fixed
 - `js/editor.js` — Canvas click-through bug: clicking a layer above the base layer in Select mode always selected the base layer instead of the topmost visible layer under the cursor.  Root cause was `_syncObjectInteractivity(target)` setting every object except the active one to `selectable: false`, preventing Fabric.js z-order hit-testing from reaching upper layers.  Now, in select mode, all user-editable objects stay `selectable: true` / `evented: true` so Fabric's built-in stacking-order click detection works naturally.  Protected layers (template, background, guides, spec-maps, hidden, locked) remain non-selectable.  Paint/shape/other tool modes keep the previous lock-everything behavior.

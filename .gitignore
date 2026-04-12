@@ -1,9 +1,10 @@
-# All PSD templates are served from the GitHub Release in hman0994/liverylab-templates.
+# All PSD templates are served from Cloudflare R2 (pub-ffa36e76eed74d899fd26499d9c90bd6.r2.dev).
 # They are NOT committed to this repo.
 templates/*.psd
 
 # Node / tooling
 node_modules/
+.wrangler/
 
 # Local editor and internal agent metadata
 .vscode/
@@ -18,5 +19,6 @@ docs/MANUAL-TEST-CHECKLIST.md
 # Ignore current .github agent/config docs
 .github/AGENTS.md
 .github/copilot-instructions.md
+.github/internal-agent-changelog.md
 .github/agents/
 .github/instructions/
