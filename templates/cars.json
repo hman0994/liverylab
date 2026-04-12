@@ -1310,5 +1310,21 @@
     "category": "Touring Car",
     "width": 2048,
     "height": 2048
+  },
+  {
+    "name": "Helmet",
+    "file": "Helmet.psd",
+    "folder": "helmet",
+    "category": "Suits & Helmets",
+    "width": 1024,
+    "height": 1024
+  },
+  {
+    "name": "Suit",
+    "file": "Driver Suit.psd",
+    "folder": "suit",
+    "category": "Suits & Helmets",
+    "width": 1024,
+    "height": 1024
   }
 ]

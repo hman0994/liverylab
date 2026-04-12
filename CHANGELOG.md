@@ -14,6 +14,10 @@ Versioning notes:
 
 ## [Unreleased]
 
+### Changed
+- `js/app.js` — Template assets are now fetched from the external GitHub release (`https://github.com/hman0994/liverylab-templates/releases/download/templates/`) instead of the local `templates/` directory. Filenames are transformed from space-separated to dot-separated to match release asset naming (e.g. `ARCA Chevy SS.psd` → `ARCA.Chevy.SS.psd`).
+- `templates/cars.json` — Fixed Suit entry `file` field from `Suit.psd` to `Driver Suit.psd` to match the release asset name.
+
 ### Fixed
 - `js/editor.js` — Canvas click-through bug: clicking a layer above the base layer in Select mode always selected the base layer instead of the topmost visible layer under the cursor.  Root cause was `_syncObjectInteractivity(target)` setting every object except the active one to `selectable: false`, preventing Fabric.js z-order hit-testing from reaching upper layers.  Now, in select mode, all user-editable objects stay `selectable: true` / `evented: true` so Fabric's built-in stacking-order click detection works naturally.  Protected layers (template, background, guides, spec-maps, hidden, locked) remain non-selectable.  Paint/shape/other tool modes keep the previous lock-everything behavior.
 - `js/editor.js` — Properties panel retained stale selected-object values (opacity, colour, etc.) after switching tools because `setTool()` did not notify the workspace UI to re-read drawing defaults.  Now fires `onSelectionChanged(null)` at the end of `setTool()` so the Properties panel refreshes from `readWorkspaceState()`, which already returns correct defaults when the active tool is not `select`.

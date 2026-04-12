@@ -577,6 +577,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     return true;
   }
 
+  const TEMPLATE_BASE_URL = 'https://github.com/hman0994/liverylab-templates/releases/download/templates/';
+
   async function loadBuiltinTemplate(car) {
     if (!window.agPsd) {
       showToast('PSD support not loaded; please check your internet connection.', 'error');
@@ -589,7 +591,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-      const resp = await fetch(`templates/${encodeURIComponent(car.file)}`);
+      const remoteFile = car.file.replaceAll(' ', '.');
+      const resp = await fetch(`${TEMPLATE_BASE_URL}${encodeURIComponent(remoteFile)}`);
       if (!resp.ok) throw new Error('Template file not found');
       const buf = await resp.arrayBuffer();
       const psd = agPsd.readPsd(buf);
