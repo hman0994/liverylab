@@ -1,0 +1,22 @@
+# All PSD templates are served from the GitHub Release tagged `templates`.
+# They are NOT committed to the repo. See .github/workflows/fetch-templates.yml.
+templates/*.psd
+
+# Node / tooling
+node_modules/
+
+# Local editor and internal agent metadata
+.vscode/
+memories/
+
+# Ignore internal planning docs in docs/ while keeping docs/QA public
+docs/ARCHITECTURE.md
+docs/IMPROVEMENT_PLAN.md
+docs/PLAN.md
+docs/MANUAL-TEST-CHECKLIST.md
+
+# Ignore current .github agent/config docs
+.github/AGENTS.md
+.github/copilot-instructions.md
+.github/agents/
+.github/instructions/

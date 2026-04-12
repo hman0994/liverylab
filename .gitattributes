@@ -1,0 +1,5 @@
+# PSDs are NOT committed to the repo. They are served from the GitHub Release tagged `templates`
+# under subfolders: cars/, helmets/, suits/.
+# The templates release is populated by the Fetch iRacing Templates workflow (.github/workflows/fetch-templates.yml).
+# app.js fetches PSDs at runtime from the release download URL, not from the repo tree.
+*.psd binary
