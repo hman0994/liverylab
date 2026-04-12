@@ -1,5 +1,5 @@
-# All PSD templates are served from the GitHub Release tagged `templates`.
-# They are NOT committed to the repo. See .github/workflows/fetch-templates.yml.
+# All PSD templates are served from the GitHub Release in hman0994/liverylab-templates.
+# They are NOT committed to this repo.
 templates/*.psd
 
 # Node / tooling
